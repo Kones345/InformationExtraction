@@ -13,6 +13,9 @@ from nltk.tag import BigramTagger
 from nltk.tag import TrigramTagger
 from nltk.tag import DefaultTagger
 import nltk.data
+from nltk.tree import Tree
+from nltk import ne_chunk, pos_tag, word_tokenize
+import sys
 
 #Train corpus 
 train_sents = brown.tagged_sents()[:48000]
@@ -79,7 +82,7 @@ def findAndReplaceTime(text):
     return text
 
 def get_continuous_chunks(chunked):
-    chunked = ne_chunk(pos_tag(word_tokenize(text)))
+    # chunked = ne_chunk(pos_tag(word_tokenize(text)))
     prev = None
     continuous_chunk = []
     current_chunk = []
@@ -88,12 +91,12 @@ def get_continuous_chunks(chunked):
             current_chunk.append(" ".join([token for token, pos in i.leaves()]))
         elif current_chunk:
             named_entity = " ".join(current_chunk)
-...                     if named_entity not in continuous_chunk:
-...                             continuous_chunk.append(named_entity)
-...                             current_chunk = []
-...             else:
-...                     continue
-...     return continuous_chunk
+            if named_entity not in continuous_chunk:
+                continuous_chunk.append(named_entity)
+                current_chunk = []
+        else:
+            continue
+    return continuous_chunk
 
 corpus = ""
 
@@ -136,19 +139,42 @@ for file in os.listdir(directory):
             splittter = ' '.join(portions[1].split())
             clean = re.sub("[^a-zA-Z\d\s:]{2,}", "", splittter)
             clean = re.sub("- - - -", "", clean)
-            print(clean)
-            tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-            tokens = tokenizer.tokenize(clean)
-            for i in range(0, len(tokens)):
-                tokens[i] = tokens[i].split()
-            print(tokens)
-
-            tagged = tagger.tag_sents(tokens)
-
+            # tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+            # nltk.download('averaged_perceptron_tagger')
+            # nltk.download('words')
+            # tokens = tokenizer.tokenize(clean)
+            sents = nltk.tokenize.sent_tokenize(clean)
+            for i in range(0, len(sents)):
+                sents[i] = nltk.tokenize.word_tokenize(sents[i])
+            
+            tagged = tagger.tag_sents(sents)
+            flatten = lambda l: [item for sublist in l for item in sublist]
+            tagged = flatten(tagged)
             print(tagged)
-            # nltk.download('maxent_ne_chunker')
-            chunked = nltk.ne_chunk_sents(tagged)
+            # chunked = ne_chunk(pos_tag(word_tokenize(clean)))
+            chunked = ne_chunk(tagged)
             print(chunked)
+            # for i in range(0, len(tokens)):
+            #     tokens[i] = tokens[i].split()
+
+            # tagged = tagger.tag_sents(tokens)
+            # print(tagged)
+            # flatten = lambda l: [item for sublist in l for item in sublist]
+            # flat = flatten(tagged)
+            # chunked = nltk.ne_chunk(flat)
+            # chunked = nltk.ne_chunk_sents(tagged)
+            print(type(chunked))
+            # try:
+            #     for x in chunked:
+            #         print(x)
+            # except:
+            #     e = sys.exc_info()[0]
+            #     print(e)
+            # # print(chunked)
+            
+            entities = get_continuous_chunks(chunked)
+            print(entities)
+            # print(list(entities))
             print ("My program took", time.time() - start_time, " seconds to run")
             emailBodies[counter] = portions[1]
             
@@ -156,7 +182,7 @@ for file in os.listdir(directory):
             #Tag Time in Header
             portions[0] = findAndReplaceTime(portions[0])
             emailHeaders.append(portions[0])
-            print(portions[0])
+            # print(portions[0])
 
 
         counter+=1
