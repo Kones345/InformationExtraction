@@ -16,14 +16,55 @@ import nltk.data
 from nltk.tree import Tree
 from nltk import ne_chunk, pos_tag, word_tokenize
 import sys
+from pathlib import Path
 
 #Train corpus 
-train_sents = brown.tagged_sents()[:48000]
-test_sents = brown.tagged_sents()[48000:]
+# train_sents = brown.tagged_sents()[:48000]
+# test_sents = brown.tagged_sents()[48000:]
+
+
+knownLocationRegxStr = '<location>(.+)<\/location>'
+knownLocationRegx = re.compile(knownLocationRegxStr)
+deadTag = '<\/sentence>'
+re.compile(deadTag)
+deadTag1 = '<\/paragraph>'
+re.compile(deadTag1)
+#KNOWN LOCATIONS
+knownLocations = set()
+
+knownSpeakersRegxStr = '<speaker>(?:Dr|Mr|Ms|Mrs|Prof|Sir|Professor)?\.?\s?([a-zA-Z ]+),?\s?(?:PhD)?<\/speaker>'
+knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
+#KNOWN SPEAKERS
+knownSpeakers = set()
+
+trainingPath = '/Users/Adam/nltk_data/corpora/seminarTraining'
+pathlist = Path(trainingPath).glob('**/*.txt')
+for path in pathlist:
+    p = str(path)
+    with open(p, 'r', encoding='utf-8') as f:
+        text = (f.read()).lower()
+        speakers = set(re.findall(knownSpeakersRegx, text))
+        if len(speakers) > 0:
+            for speaker in speakers:
+                knownSpeakers.add(speaker)
+        
+        locations = set(re.findall(knownLocationRegx, text))
+        if len(locations) > 0:
+            for loc in locations:
+                loc = re.sub(deadTag, "", loc)
+                loc = re.sub(deadTag, "", loc)
+                knownLocations.add(loc)
+
+
+print(knownLocations)
+print(knownSpeakers)
+
 
 
 #Setting up directory
 mypath = os.getcwd() + '/untagged/'
+
+
 onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 directory = os.fsencode(mypath)
 
@@ -33,7 +74,7 @@ def backoff_tagger(train_sents, tagger_classes, backoff=None):
         backoff = cls(train_sents, backoff=backoff)
     return backoff
 
-tagger = backoff_tagger(train_sents, [UnigramTagger, BigramTagger, TrigramTagger], backoff=DefaultTagger('NN'))
+# tagger = backoff_tagger(train_sents, [UnigramTagger, BigramTagger, TrigramTagger], backoff=DefaultTagger('NN'))
 
 def findAndReplaceTime(text):
 
@@ -98,7 +139,7 @@ def get_continuous_chunks(chunked):
             continue
     return continuous_chunk
 
-corpus = ""
+#corpus = ""
 
 #Setting up data holders
 emailHeaders = []
@@ -114,6 +155,8 @@ timePattern4 = '(' + timePattern3 + am_pm + ')'#dd:dd AM
 timePattern5 = '(' + timePattern3 + ')' + ' - ' + timePattern4
 timePattern6 = timePattern4 + ' - (' + timePattern3 + ')'  
 
+header_body_regx_str = r'([\s\S]+(?:\b.+\b:.+\n\n|\bAbstract\b:))([\s\S]*)'
+
 #Extracting files
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
@@ -122,74 +165,66 @@ for file in os.listdir(directory):
             #Read in email
             placeholder= f.read()
             #Splits the email on the word abstract
-            portions = placeholder.split("Abstract:")
+            # portions = placeholder.split(header_body_regx_str)
+
+            # print(len(portions))
+            try:
+                header, body = re.search(header_body_regx_str, placeholder).groups()
+            except:
+                print(filename)
+                continue
+            
+            print("HEADER:")
+            print()
+            print(header)
+            print()
+            print("BODY:")
+            print()
+            print(body)
+            print()
 
             #Empty File
-            if(len(portions) < 2):
-                print(filename)
-                print(portions)
-                continue
-            #More than one abstract found
-            elif (len(portions) > 2):
-                rest = portions[1:]
-                portions[1] = "Abstract: ".join(rest)
+            # if(len(portions) < 2):
+            #     print(filename)
+            #     print(portions)
+            #     continue
+            # #More than one abstract found
+            # elif (len(portions) > 2):
+            #     rest = portions[1:]
+            #     portions[1] = "Abstract: ".join(rest)
 
             #Appends the body to a dictionary relatung to the position of the header in the header list
 
-            splittter = ' '.join(portions[1].split())
-            clean = re.sub("[^a-zA-Z\d\s:]{2,}", "", splittter)
-            clean = re.sub("- - - -", "", clean)
-            # tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-            # nltk.download('averaged_perceptron_tagger')
-            # nltk.download('words')
-            # tokens = tokenizer.tokenize(clean)
-            sents = nltk.tokenize.sent_tokenize(clean)
-            for i in range(0, len(sents)):
-                sents[i] = nltk.tokenize.word_tokenize(sents[i])
+            # splittter = ' '.join(portions[1].split())
+            # clean = re.sub("[^a-zA-Z\d\s:]{2,}", "", splittter)
+            # clean = re.sub("- - - -", "", clean)
+            # # location_regx_str = r'(?:\b(?:Place|Location|Where)\b:\s*)(.*)'
+            # # location_reg = re.compile(location_regx_str, re.IGNORECASE)
+            # # locations = {match.group(1) for match in location_reg.finditer(portions[0])}
+            # # locations |= {match.group(1) for match in location_reg.finditer(clean)}
+            # # print(locations)
+            # sents = nltk.tokenize.sent_tokenize(clean)
+            # for i in range(0, len(sents)):
+            #     sents[i] = nltk.tokenize.word_tokenize(sents[i])
             
-            tagged = tagger.tag_sents(sents)
-            flatten = lambda l: [item for sublist in l for item in sublist]
-            tagged = flatten(tagged)
-            print(tagged)
-            # chunked = ne_chunk(pos_tag(word_tokenize(clean)))
-            chunked = ne_chunk(tagged)
-            print(chunked)
-            # for i in range(0, len(tokens)):
-            #     tokens[i] = tokens[i].split()
-
-            # tagged = tagger.tag_sents(tokens)
-            # print(tagged)
+            # tagged = tagger.tag_sents(sents)
             # flatten = lambda l: [item for sublist in l for item in sublist]
-            # flat = flatten(tagged)
-            # chunked = nltk.ne_chunk(flat)
-            # chunked = nltk.ne_chunk_sents(tagged)
-            print(type(chunked))
-            # try:
-            #     for x in chunked:
-            #         print(x)
-            # except:
-            #     e = sys.exc_info()[0]
-            #     print(e)
-            # # print(chunked)
+            # tagged = flatten(tagged)
+            # print(tagged)
+            # # chunked = ne_chunk(pos_tag(word_tokenize(clean)))
+            # chunked = ne_chunk(tagged)
+     
             
-            entities = get_continuous_chunks(chunked)
-            print(entities)
-            # print(list(entities))
-            print ("My program took", time.time() - start_time, " seconds to run")
-            emailBodies[counter] = portions[1]
-            
-            
-            #Tag Time in Header
-            portions[0] = findAndReplaceTime(portions[0])
-            emailHeaders.append(portions[0])
-            # print(portions[0])
+            # entities = get_continuous_chunks(chunked)
+            # print(entities)
 
+            # emailBodies[counter] = portions[1]
+            
+            # #Tag Time in Header
+            # portions[0] = findAndReplaceTime(portions[0])
+            # emailHeaders.append(portions[0])
+            # print(portions[0])
 
         counter+=1
         continue
-
 # corpus = re.sub("<.*?>", "", corpus)
-
-# corpus = corpus.lower()
-# print(corpus)
-# tokens = nltk.word_tokenize(corpus)
