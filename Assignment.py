@@ -66,7 +66,7 @@ knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
 #KNOWN SPEAKERS
 knownSpeakers = set()
 
-trainingPath = '/Users/Adam/nltk_data/corpora/seminarTraining'
+trainingPath = 'data/training'
 pathlist = Path(trainingPath).glob('**/*.txt')
 for path in pathlist:
     p = str(path)
@@ -198,7 +198,7 @@ def tagPOS(body):
 
 
 #Setting up directory
-mypath = os.getcwd() + '/untagged/'
+mypath = os.getcwd() + 'data/untagged/'
 onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 directory = os.fsencode(mypath)
 
