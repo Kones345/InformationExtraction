@@ -12,3 +12,7 @@ knownLocationRegxStr = '<location>(.+)<\/location>'
 knownSpeakersRegxStr = '<speaker>(?:Dr|Mr|Ms|Mrs|Prof|Sir|Professor)?\.?\s?([a-zA-Z ]+),?\s?(?:PhD)?<\/speaker>'
 deadTag = '<\/sentence>'
 deadTag1 = '<\/paragraph>'
+
+location_regx_str = r'(?:\b(?:Place|Location|Where)\b:\s*)(.*)'
+pos_location_regx_str = r'((?:(?:(?:\w*?{\*(?:NNP|CD)\*})|(?:room{\*.+?\*}))\s*)*)'
+pos_tags_regx_str = r'{\*.+?\*}'

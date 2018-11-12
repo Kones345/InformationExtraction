@@ -1,3 +1,13 @@
+
+#My current approach is to use tagged emails as training to extract known locations and speakers from them
+#After this I will extract the header and body
+#Extract the time from the header
+#Extract the location from the body
+#Add found locations to the set of known locations
+#Repeat this for speakkers
+#Once I have location and speakers I will tag sentences and paragraphs with regex
+
+
 import time
 start_time = time.time()
 #Set up corpus
@@ -19,10 +29,22 @@ import sys
 from pathlib import Path
 
 from regex_store import *
-#Train corpus 
-# train_sents = brown.tagged_sents()[:48000]
-# test_sents = brown.tagged_sents()[48000:]
+import universities
 
+from word2number import w2n
+
+
+#Train corpus 
+train_sents = brown.tagged_sents()[:48000]
+test_sents = brown.tagged_sents()[48000:]
+
+def backoff_tagger(train_sents, tagger_classes, backoff=None):
+
+    for cls in tagger_classes :
+        backoff = cls(train_sents, backoff=backoff)
+    return backoff
+
+tagger = backoff_tagger(train_sents, [UnigramTagger, BigramTagger, TrigramTagger], backoff=DefaultTagger('NN'))
 
 knownLocationRegx = re.compile(knownLocationRegxStr)
 re.compile(deadTag)
@@ -30,6 +52,15 @@ re.compile(deadTag1)
 #KNOWN LOCATIONS
 knownLocations = set()
 
+uni = universities.API()
+allUnis = uni.get_all()
+
+for x in allUnis:     
+    knownLocations.add(x.name)
+
+# length = sum(1 for _ in allUnis)
+# print(length)
+# knownLocations
 
 knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
 #KNOWN SPEAKERS
@@ -44,6 +75,7 @@ for path in pathlist:
         speakers = set(re.findall(knownSpeakersRegx, text))
         if len(speakers) > 0:
             for speaker in speakers:
+                speaker = re.sub(r'[^\w\s]','',speaker)
                 knownSpeakers.add(speaker)
         
         locations = set(re.findall(knownLocationRegx, text))
@@ -51,13 +83,14 @@ for path in pathlist:
             for loc in locations:
                 loc = re.sub(deadTag, "", loc)
                 loc = re.sub(deadTag, "", loc)
+                loc = re.sub(r'[^\w\s]','',loc)
                 knownLocations.add(loc)
 
 ##
 # FINDING THE FILE INFORMATION
 ##
 
-def findAndReplaceTime(text):
+def extractTime(text):
 
     time1 = re.compile(timePattern1)
     time2 = re.compile(timePattern2)
@@ -89,13 +122,89 @@ def findAndReplaceTime(text):
         return str(result3.group(0)), None
     return None, None
 
+
+def cleanLoc(x):
+    try:
+        result = w2n.word_to_num(x)
+    except:
+        result = None
+    return  result is None and x != "" and (x.isdigit()) == False and x != "room" and x!= "Room"
+
+def extractLocationREGEX(header, body):
+    location_regx = re.compile(location_regx_str, re.IGNORECASE)
+    locations = {match.group(1) for match in location_regx.finditer(header)}
+    locations |= {match.group(1) for match in location_regx.finditer(body)}
+
+    pos_location_regx = re.compile(pos_location_regx_str, re.IGNORECASE)
+    tagged_body = tagPOS(body)
+    
+    taggedLocations = set()
+    tags = pos_location_regx.finditer(tagged_body)
+    tagged_locations = {match.group(1) for match in pos_location_regx.finditer(tagged_body)}
+    tagged_locations = {re.sub(pos_tags_regx_str, '', location).strip() for location in tagged_locations}
+
+    res = locations.union(tagged_locations)
+    if (len(res) == 0):
+        for loc in knownLocations:
+            search = re.search(str(loc), body)
+            if (search is not None):
+                locations.add(loc)
+
+    res = set(filter(cleanLoc, res))
+    knownLocations = knownLocations.union(res)
+    # res = set(filter(cleanLoc, res))
+
+    return res
+
+def get_continuous_chunks(chunked):
+    prev = None
+    continuous_chunk = []
+    current_chunk = []
+    for i in chunked:
+        if type(i) == Tree:
+            current_chunk.append(" ".join([token for token, pos in i.leaves()]))
+        elif current_chunk:
+            named_entity = " ".join(current_chunk)
+            if named_entity not in continuous_chunk:
+                continuous_chunk.append(named_entity)
+                current_chunk = []
+        else:
+            continue
+    return continuous_chunk
+
+def extractLocationNER(header, body):
+    location_regx = re.compile(location_regx_str, re.IGNORECASE)
+    locations = {match.group(1) for match in location_regx.finditer(header)}
+    locations |= {match.group(1) for match in location_regx.finditer(body)}
+
+    splittter = ' '.join(body)
+    clean = re.sub("[^a-zA-Z\d\s:]{2,}", "", splittter)
+    clean = re.sub("- - - -", "", clean)
+    chunked = ne_chunk(pos_tag(word_tokenize(clean)))
+    # chunked = ne_chunk(tagged)
+    entities = get_continuous_chunks(chunked)
+    return entities
+
+def tagPOS(body):
+    sents = nltk.tokenize.sent_tokenize(body)
+    for i in range(0, len(sents)):
+        sents[i] = nltk.tokenize.word_tokenize(sents[i])
+    tagged = tagger.tag_sents(sents)
+    flatten = lambda l: [item for sublist in l for item in sublist]
+    tagged = flatten(tagged)
+    processed_body = ['{}{{*{}*}}'.format(word, tag) for (word, tag) in tagged]
+
+    return ' '.join(processed_body)
+
+
 #Setting up directory
 mypath = os.getcwd() + '/untagged/'
 onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 directory = os.fsencode(mypath)
 
 header_body_regx_str = r'([\s\S]+(?:\b.+\b:.+\n\n|\bAbstract\b:))([\s\S]*)'
-
+locationFound = 0
+noLocation = 0
 #Extracting files
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
@@ -112,103 +221,38 @@ for file in os.listdir(directory):
                 continue
 
 
-            stime, etime = findAndReplaceTime(header)
-            print("TIME: " + stime + " ", etime)
+            stime, etime = extractTime(header)
+            # tagged = tagPOS(body)
+            # print(tagged)
+            locations = extractLocationREGEX(header, body)
+            if(len(locations) > 0):
+                locationFound +=1
+            else:
+                noLocation += 1
+            # print("TIME: " + stime + " ", etime)
             print()
             print(filename)
             print()
-            print("HEADER:")
+            # print("HEADER:")
+            # print()
+            # print(header)
+            # print()
+            # print("BODY:")
+            # print()
+            # print(body)
+            # print()
+            print("LOCATIONS REGEX: ")
+            print(locations)
             print()
-            print(header)
-            print()
-            print("BODY:")
-            print()
-            print(body)
-            print()
-
-            #Empty File
-            # if(len(portions) < 2):
-            #     print(filename)
-            #     print(portions)
-            #     continue
-            # #More than one abstract found
-            # elif (len(portions) > 2):
-            #     rest = portions[1:]
-            #     portions[1] = "Abstract: ".join(rest)
-
-            #Appends the body to a dictionary relatung to the position of the header in the header list
-
-            # splittter = ' '.join(portions[1].split())
-            # clean = re.sub("[^a-zA-Z\d\s:]{2,}", "", splittter)
-            # clean = re.sub("- - - -", "", clean)
-            # # location_regx_str = r'(?:\b(?:Place|Location|Where)\b:\s*)(.*)'
-            # # location_reg = re.compile(location_regx_str, re.IGNORECASE)
-            # # locations = {match.group(1) for match in location_reg.finditer(portions[0])}
-            # # locations |= {match.group(1) for match in location_reg.finditer(clean)}
-            # # print(locations)
-            # sents = nltk.tokenize.sent_tokenize(clean)
-            # for i in range(0, len(sents)):
-            #     sents[i] = nltk.tokenize.word_tokenize(sents[i])
-            
-            # tagged = tagger.tag_sents(sents)
-            # flatten = lambda l: [item for sublist in l for item in sublist]
-            # tagged = flatten(tagged)
-            # print(tagged)
-            # # chunked = ne_chunk(pos_tag(word_tokenize(clean)))
-            # chunked = ne_chunk(tagged)
-     
-            
-            # entities = get_continuous_chunks(chunked)
-            # print(entities)
-
-            # emailBodies[counter] = portions[1]
-            
-            # #Tag Time in Header
-            # portions[0] = findAndReplaceTime(portions[0])
-            # emailHeaders.append(portions[0])
-            # print(portions[0])
-
-        # counter+=1
+            # print("LOCATIONS NER: ")
+            # print()
+            # locations1 = extractLocationNER(header, body)
+            # print(locations1)
+            # print(knownLocations)
+        
         continue
 
+print(locationFound, noLocation)
+print(locationFound/(locationFound + noLocation))
 
 
-
-
-
-
-def backoff_tagger(train_sents, tagger_classes, backoff=None):
-
-    for cls in tagger_classes :
-        backoff = cls(train_sents, backoff=backoff)
-    return backoff
-
-# tagger = backoff_tagger(train_sents, [UnigramTagger, BigramTagger, TrigramTagger], backoff=DefaultTagger('NN'))
- 
-
-def get_continuous_chunks(chunked):
-    # chunked = ne_chunk(pos_tag(word_tokenize(text)))
-    prev = None
-    continuous_chunk = []
-    current_chunk = []
-    for i in chunked:
-        if type(i) == Tree:
-            current_chunk.append(" ".join([token for token, pos in i.leaves()]))
-        elif current_chunk:
-            named_entity = " ".join(current_chunk)
-            if named_entity not in continuous_chunk:
-                continuous_chunk.append(named_entity)
-                current_chunk = []
-        else:
-            continue
-    return continuous_chunk
-
-#corpus = ""
-
-#Setting up data holders
-emailHeaders = []
-emailBodies = {}
-counter = 0
-
-
-# corpus = re.sub("<.*?>", "", corpus)
