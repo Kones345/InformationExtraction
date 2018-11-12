@@ -18,21 +18,19 @@ from nltk import ne_chunk, pos_tag, word_tokenize
 import sys
 from pathlib import Path
 
+from regex_store import *
 #Train corpus 
 # train_sents = brown.tagged_sents()[:48000]
 # test_sents = brown.tagged_sents()[48000:]
 
 
-knownLocationRegxStr = '<location>(.+)<\/location>'
 knownLocationRegx = re.compile(knownLocationRegxStr)
-deadTag = '<\/sentence>'
 re.compile(deadTag)
-deadTag1 = '<\/paragraph>'
 re.compile(deadTag1)
 #KNOWN LOCATIONS
 knownLocations = set()
 
-knownSpeakersRegxStr = '<speaker>(?:Dr|Mr|Ms|Mrs|Prof|Sir|Professor)?\.?\s?([a-zA-Z ]+),?\s?(?:PhD)?<\/speaker>'
+
 knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
 #KNOWN SPEAKERS
 knownSpeakers = set()
@@ -55,26 +53,9 @@ for path in pathlist:
                 loc = re.sub(deadTag, "", loc)
                 knownLocations.add(loc)
 
-
-print(knownLocations)
-print(knownSpeakers)
-
-
-
-#Setting up directory
-mypath = os.getcwd() + '/untagged/'
-
-
-onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
-directory = os.fsencode(mypath)
-
-def backoff_tagger(train_sents, tagger_classes, backoff=None):
-
-    for cls in tagger_classes :
-        backoff = cls(train_sents, backoff=backoff)
-    return backoff
-
-# tagger = backoff_tagger(train_sents, [UnigramTagger, BigramTagger, TrigramTagger], backoff=DefaultTagger('NN'))
+##
+# FINDING THE FILE INFORMATION
+##
 
 def findAndReplaceTime(text):
 
@@ -95,65 +76,23 @@ def findAndReplaceTime(text):
 
     #Checks the possible matches and subs time into correct place
     if result2 is not None:
-        start = '<stime> ' + result2.group(1) + ' </stime>'
-        end = '<etime> ' + result2.group(3) + ' </etime>'
-        text = re.sub(str(result2.group(1)), start, text)
-        text = re.sub(str(result2.group(3)), end, text)
+        return str(result2.group(1)), str(result2.group(3))
     elif(result5 is not None):
-        start = '<stime> ' + result5.group(1) + ' </stime>'
-        end = '<etime> ' + result5.group(2) + ' </etime>'
-        text = re.sub(str(result5.group(1)), start, text)
-        text = re.sub(str(result5.group(2)), end, text)
+        return str(result5.group(1)), str(result5.group(2))
     elif(result6 is not None):
-        start = '<stime> ' + result6.group(1) + ' </stime>'
-        end = '<etime> ' + result6.group(3) + ' </etime>'
-        text = re.sub(str(result6.group(1)), start, text)
-        text = re.sub(str(result6.group(3)), end, text)  
+        return str(result6.group(1)), str(result6.group(3))
     elif(result4 is not None):
-        start = '<stime> ' + result4.group(1) + ' </stime>'
-        text = re.sub(str(result4.group(1)), start, text)
+        return str(result4.group(1)), None
     elif(result1 is not None):
-        start = '<stime> ' + result1.group(1) + ' </stime>'
-        end = '<etime> ' + result1.group(2) + ' </etime>'
-        text = re.sub(str(result1.group(1)), start, text)
-        text = re.sub(str(result1.group(2)), end, text)
+        return str(result1.group(1)), str(result1.group(2))
     elif(result3 is not None):
-        start = '<stime> ' + result3.group(0) + ' </stime>'
-        text = re.sub(str(result3.group(0)), start, text)
-    return text
+        return str(result3.group(0)), None
+    return None, None
 
-def get_continuous_chunks(chunked):
-    # chunked = ne_chunk(pos_tag(word_tokenize(text)))
-    prev = None
-    continuous_chunk = []
-    current_chunk = []
-    for i in chunked:
-        if type(i) == Tree:
-            current_chunk.append(" ".join([token for token, pos in i.leaves()]))
-        elif current_chunk:
-            named_entity = " ".join(current_chunk)
-            if named_entity not in continuous_chunk:
-                continuous_chunk.append(named_entity)
-                current_chunk = []
-        else:
-            continue
-    return continuous_chunk
-
-#corpus = ""
-
-#Setting up data holders
-emailHeaders = []
-emailBodies = {}
-counter = 0
-
-#TIME PATTERNS
-timePattern1 = '(\d{1,2}:\d{2}) - (\d{1,2}:\d{2})' # dd:dd - dd:dd
-am_pm = '(AM|PM|am|pm|A\.M\.|P\.M\.|a\.m\.|p\.m\.| AM| PM| am| pm| A\.M\.| P\.M\.| a\.m\.| p\.m\.)'
-timePattern2 = "(\d{1,2}:\d{2}" + am_pm + ') - (\d{1,2}:\d{2}' + am_pm + ')'#dd:dd am - dd:dd am
-timePattern3 =  '\d{1,2}:\d{2}' #dd:dd || d:dd
-timePattern4 = '(' + timePattern3 + am_pm + ')'#dd:dd AM
-timePattern5 = '(' + timePattern3 + ')' + ' - ' + timePattern4
-timePattern6 = timePattern4 + ' - (' + timePattern3 + ')'  
+#Setting up directory
+mypath = os.getcwd() + '/untagged/'
+onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+directory = os.fsencode(mypath)
 
 header_body_regx_str = r'([\s\S]+(?:\b.+\b:.+\n\n|\bAbstract\b:))([\s\S]*)'
 
@@ -164,16 +103,20 @@ for file in os.listdir(directory):
         with open(mypath + filename, 'r', encoding='utf-8') as f:
             #Read in email
             placeholder= f.read()
-            #Splits the email on the word abstract
-            # portions = placeholder.split(header_body_regx_str)
 
-            # print(len(portions))
+            #Splits the text into header and body
             try:
                 header, body = re.search(header_body_regx_str, placeholder).groups()
             except:
                 print(filename)
                 continue
-            
+
+
+            stime, etime = findAndReplaceTime(header)
+            print("TIME: " + stime + " ", etime)
+            print()
+            print(filename)
+            print()
             print("HEADER:")
             print()
             print(header)
@@ -225,6 +168,47 @@ for file in os.listdir(directory):
             # emailHeaders.append(portions[0])
             # print(portions[0])
 
-        counter+=1
+        # counter+=1
         continue
+
+
+
+
+
+
+
+def backoff_tagger(train_sents, tagger_classes, backoff=None):
+
+    for cls in tagger_classes :
+        backoff = cls(train_sents, backoff=backoff)
+    return backoff
+
+# tagger = backoff_tagger(train_sents, [UnigramTagger, BigramTagger, TrigramTagger], backoff=DefaultTagger('NN'))
+ 
+
+def get_continuous_chunks(chunked):
+    # chunked = ne_chunk(pos_tag(word_tokenize(text)))
+    prev = None
+    continuous_chunk = []
+    current_chunk = []
+    for i in chunked:
+        if type(i) == Tree:
+            current_chunk.append(" ".join([token for token, pos in i.leaves()]))
+        elif current_chunk:
+            named_entity = " ".join(current_chunk)
+            if named_entity not in continuous_chunk:
+                continuous_chunk.append(named_entity)
+                current_chunk = []
+        else:
+            continue
+    return continuous_chunk
+
+#corpus = ""
+
+#Setting up data holders
+emailHeaders = []
+emailBodies = {}
+counter = 0
+
+
 # corpus = re.sub("<.*?>", "", corpus)
