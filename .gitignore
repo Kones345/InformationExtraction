@@ -1,3 +1,5 @@
-data/training/
-data/untagged/
-example/
+/data/training/
+/data/untagged/
+/example/
+.pdf
+.pyc
