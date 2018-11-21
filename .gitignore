@@ -1,5 +1,6 @@
 /data/training/
 /data/untagged/
 /example/
-.pdf
-.pyc
+*.pdf
+*.pyc
+*.json
