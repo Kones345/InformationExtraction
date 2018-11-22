@@ -8,6 +8,7 @@ timePattern5 = '(' + timePattern3 + ')' + ' - ' + timePattern4
 timePattern6 = timePattern4 + ' - (' + timePattern3 + ')'
 
 speaker_regx_str = r'(?:\b(?:Speaker|Name|Who)\b:\s*)(.*?,|.*)'
+# speaker_regx_str = r'(?:\b(?:Speaker|Name|Who)\b:\s*)(.*?|.*)(?:,|-|\/)'
 
 knownLocationRegxStr = '<location>(.+)<\/location>'
 knownSpeakersRegxStr = '<speaker>(?:Dr|Mr|Ms|Mrs|Prof|Sir|Professor)?\.?\s?([a-zA-Z ]+),?\s?(?:PhD)?<\/speaker>'

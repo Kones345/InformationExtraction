@@ -14,6 +14,9 @@ class DataExtractor():
     # backoff = tagger.backoff_tagger(backoff=DefaultTagger('NN'))
     knownLocationRegx = re.compile(knownLocationRegxStr)
     
+    #KNOWN SPEAKERS
+    knownSpeakers = set()
+
     #KNOWN LOCATIONS
     knownLocations = set()
 
@@ -100,9 +103,12 @@ class DataExtractor():
         final = set()
         for x in speakerList:
             if x != []:
+                x = re.sub(",", "", x)
+                x = re.sub("(\s?)(?:,|-|\/)(\s).*", "", x)
+                x = re.sub("(\s?)\(.*", "", x)
                 final.add(x)
-        # final = {x for x in speakerList if x != []}
-
+                self.knownSpeakers.add(x)
+            
         return final
 
     

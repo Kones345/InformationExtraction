@@ -30,8 +30,7 @@ re.compile(deadTag1)
 extractor = DataExtractor()
 
 knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
-#KNOWN SPEAKERS
-knownSpeakers = set()
+
 
 trainingPath = 'data/training'
 pathlist = Path(trainingPath).glob('**/*.txt')
@@ -43,7 +42,7 @@ for path in pathlist:
         if len(speakers) > 0:
             for speaker in speakers:
                 speaker = re.sub(r'[^\w\s]','',speaker)
-                knownSpeakers.add(speaker)
+                extractor.knownSpeakers.add(speaker)
         
         locations = set(re.findall(extractor.knownLocationRegx, text))
         if len(locations) > 0:
@@ -61,6 +60,9 @@ directory = os.fsencode(mypath)
 header_body_regx_str = r'([\s\S]+(?:\b.+\b:.+\n\n|\bAbstract\b:))([\s\S]*)'
 locationFound = 0
 noLocation = 0
+speakersFound  = 0
+noSpeakers = 0
+foundSpeakers = []
 #Extracting files
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
@@ -97,11 +99,19 @@ for file in os.listdir(directory):
             # print()
             # print(body)
             # print()
-            print("LOCATIONS REGEX: ")
-            print(locations)
-            print()
+            # print("LOCATIONS REGEX: ")
+            # print(locations) 
+            # print()
             print('Speakers')
-            print(extractor.extractSpeakerREGEX(header, body))
+            speakers = extractor.extractSpeakerREGEX(header, body)
+            # foundSpeakers.append(speakers)
+            print(speakers)
+            if(len(speakers) > 0):
+                speakersFound +=1
+                for x in speakers:
+                    foundSpeakers.append(x)
+            else:
+                noSpeakers += 1
             # print("LOCATIONS NER: ")
             # print()
             # locations1 = extractLocationNER(header, body)
@@ -110,7 +120,10 @@ for file in os.listdir(directory):
         
         continue
 
-print(locationFound, noLocation)
-print(locationFound/(locationFound + noLocation))
+# print(locationFound, noLocation)
+# print(locationFound/(locationFound + noLocation))
+print(foundSpeakers)
+print(speakersFound, noSpeakers)
+print(speakersFound/(speakersFound + noSpeakers))
 
 

@@ -1,5 +1,6 @@
 /data/training/
 /data/untagged/
+/data/names/
 /example/
 *.pdf
 *.pyc
