@@ -89,6 +89,22 @@ class DataExtractor():
         # res = set(filter(cleanLoc, res))
 
         return res
+
+    def extractSpeakerREGEX(self, header, body):
+        speakerList = []
+        speaker_regex = re.compile(speaker_regx_str, re.IGNORECASE)
+        flatten = lambda l: [item for sublist in l for item in sublist]
+        speakerList.append(speaker_regex.findall(header))
+        speakerList.append(speaker_regex.findall(body))
+        speakerList = flatten(speakerList)
+        final = set()
+        for x in speakerList:
+            if x != []:
+                final.add(x)
+        # final = {x for x in speakerList if x != []}
+
+        return final
+
     
     # def get_continuous_chunks(chunked):
     #     prev = None

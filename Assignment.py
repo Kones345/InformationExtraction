@@ -53,9 +53,6 @@ for path in pathlist:
                 loc = re.sub(r'[^\w\s]','',loc)
                 extractor.knownLocations.add(loc)
 
-
-
-
 #Setting up directory
 mypath = os.getcwd() + '/data/untagged/'
 onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -103,6 +100,8 @@ for file in os.listdir(directory):
             print("LOCATIONS REGEX: ")
             print(locations)
             print()
+            print('Speakers')
+            print(extractor.extractSpeakerREGEX(header, body))
             # print("LOCATIONS NER: ")
             # print()
             # locations1 = extractLocationNER(header, body)
