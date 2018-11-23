@@ -1,13 +1,3 @@
-
-#My current approach is to use tagged emails as training to extract known locations and speakers from them
-#After this I will extract the header and body
-#Extract the time from the header
-#Extract the location from the body
-#Add found locations to the set of known locations
-#Repeat this for speakkers
-#Once I have location and speakers I will tag sentences and paragraphs with regex
-
-
 import time
 start_time = time.time()
 #Set up corpus
@@ -54,7 +44,7 @@ for path in pathlist:
 
 #Setting up directory
 mypath = os.getcwd() + '/data/untagged/'
-onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+# onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 directory = os.fsencode(mypath)
 
 header_body_regx_str = r'([\s\S]+(?:\b.+\b:.+\n\n|\bAbstract\b:))([\s\S]*)'
@@ -112,11 +102,16 @@ for file in os.listdir(directory):
                     foundSpeakers.append(x)
             else:
                 noSpeakers += 1
+            print()
+            print("SENTENCES: ", extractor.extractSentences(body))
+            print()
+            print("PARAGRAPHS: ", extractor.extractParagraphs(body))
             # print("LOCATIONS NER: ")
             # print()
             # locations1 = extractLocationNER(header, body)
             # print(locations1)
             # print(knownLocations)
+            # print("STANFORD TAGGING: ", extractor.tagger.nerStanford(body))
         
         continue
 

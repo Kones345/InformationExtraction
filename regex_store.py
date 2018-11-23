@@ -18,3 +18,5 @@ deadTag1 = '<\/paragraph>'
 location_regx_str = r'(?:\b(?:Place|Location|Where)\b:\s*)(.*)'
 pos_location_regx_str = r'((?:(?:(?:\w*?{\*(?:NNP|CD)\*})|(?:room{\*.+?\*}))\s*)*)'
 pos_tags_regx_str = r'{\*.+?\*}'
+
+paragraphRegex = r'(?s)((?:[^\n][\n]?)+)'

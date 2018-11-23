@@ -2,6 +2,9 @@
 /data/untagged/
 /data/names/
 /example/
+/stanfordcCoreJars/
+/stanfordcNERJars/
+/__pycache__/
 *.pdf
 *.pyc
 *.json
