@@ -13,6 +13,7 @@ from pathlib import Path
 from regex_store import *
 from DataExtractor import DataExtractor
 
+import os
 
 re.compile(deadTag)
 re.compile(deadTag1)
@@ -72,7 +73,7 @@ for file in os.listdir(directory):
             stime, etime = extractor.extractTime(header)
             # tagged = tagPOS(body)
             # print(tagged)
-            locations = extractor.extractLocationREGEX(header, body)
+            locations = extractor.extractLocation(header, body)
             if(len(locations) > 0):
                 locationFound +=1
             else:
@@ -90,35 +91,29 @@ for file in os.listdir(directory):
             # print(body)
             # print()
             # print("LOCATIONS REGEX: ")
-            # print(locations) 
+            print(locations) 
             # print()
-            print('Speakers')
-            speakers = extractor.extractSpeakerREGEX(header, body)
+            # print('Speakers')
+            # speakers = extractor.extractSpeaker(header, body)
             # foundSpeakers.append(speakers)
-            print(speakers)
-            if(len(speakers) > 0):
-                speakersFound +=1
-                for x in speakers:
-                    foundSpeakers.append(x)
-            else:
-                noSpeakers += 1
-            print()
-            print("SENTENCES: ", extractor.extractSentences(body))
-            print()
-            print("PARAGRAPHS: ", extractor.extractParagraphs(body))
-            # print("LOCATIONS NER: ")
+            # print(speakers)
+            # if(len(speakers) > 0):
+            #     speakersFound +=1
+            #     for x in speakers:
+            #         foundSpeakers.append(x)
+            # else:
+            #     noSpeakers += 1
             # print()
-            # locations1 = extractLocationNER(header, body)
-            # print(locations1)
-            # print(knownLocations)
-            # print("STANFORD TAGGING: ", extractor.tagger.nerStanford(body))
+            # print("SENTENCES: ", extractor.extractSentences(body))
+            # print()
+            # print("PARAGRAPHS: ", extractor.extractParagraphs(body))
         
         continue
 
-# print(locationFound, noLocation)
-# print(locationFound/(locationFound + noLocation))
-print(foundSpeakers)
-print(speakersFound, noSpeakers)
-print(speakersFound/(speakersFound + noSpeakers))
-
+print(locationFound, noLocation)
+print(locationFound/(locationFound + noLocation))
+# print(foundSpeakers)
+# print(speakersFound, noSpeakers)
+# print(speakersFound/(speakersFound + noSpeakers))
+os.system("say 'Program Complete'")
 

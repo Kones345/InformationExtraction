@@ -11,10 +11,13 @@ from nltk.tree import Tree
 from nltk.corpus import stopwords
 import nltk.data
 
+#Class to extract data from the text
 class DataExtractor():
 
+    #Instance of the tagger class
     tagger = Tagger()
-    # backoff = tagger.backoff_tagger(backoff=DefaultTagger('NN'))
+
+    #Regex to be used lated in the known loacation
     knownLocationRegx = re.compile(knownLocationRegxStr)
     
     #KNOWN SPEAKERS
@@ -22,12 +25,6 @@ class DataExtractor():
 
     #KNOWN LOCATIONS
     knownLocations = set()
-
-    uni = universities.API()
-    allUnis = uni.get_all()
-
-    # for x in allUnis:     
-    #     knownLocations.add(x.name)
 
     def __init__(self):
         self.sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
@@ -71,50 +68,55 @@ class DataExtractor():
             result = None
         return  result is None and x != "" and (x.isdigit()) == False and x != "room" and x!= "Room"
     
-    def extractLocationREGEX(self, header, body):
+    def extractLocation(self, header, body):
         location_regx = re.compile(location_regx_str, re.IGNORECASE)
+        locations = set()
+        locationList = []
         locations = {match.group(1) for match in location_regx.finditer(header)}
         locations |= {match.group(1) for match in location_regx.finditer(body)}
 
-        pos_location_regx = re.compile(pos_location_regx_str, re.IGNORECASE)
-        tagged_body = self.tagger.tagPOS(body)
+        if(len(locations) == 0):
+            joined = ' '.join(body.split())
+            locationList = self.tagger.nerStanford(joined, "LOCATION")
+            for x in locationList:
+                if x in self.knownLocations:
+                    locations.add(x)
+
+        if(len(locations) == 0):
+            return set(locationList)
+        else:
+            return locations
+
+        # pos_location_regx = re.compile(pos_location_regx_str, re.IGNORECASE)
+        # tagged_body = self.tagger.tagPOS(body)
         
-        taggedLocations = set()
-        tags = pos_location_regx.finditer(tagged_body)
-        tagged_locations = {match.group(1) for match in pos_location_regx.finditer(tagged_body)}
-        tagged_locations = {re.sub(pos_tags_regx_str, '', location).strip() for location in tagged_locations}
+        # taggedLocations = set()
+        # tags = pos_location_regx.finditer(tagged_body)
+        # tagged_locations = {match.group(1) for match in pos_location_regx.finditer(tagged_body)}
+        # tagged_locations = {re.sub(pos_tags_regx_str, '', location).strip() for location in tagged_locations}
 
-        res = locations.union(tagged_locations)
-        global knownLocations
-        if (len(res) == 0):
-            for loc in self.knownLocations:
-                search = re.search(str(loc), body)
-                if (search is not None):
-                    locations.add(loc)
+        # res = locations.union(tagged_locations)
+        # final = set()
+        # for x in res:
+        #     if x != '':
+        #         final.add(x)
+        # # print(res)
+        # global knownLocations
+        # if (len(final) == 0):
+        #     for loc in self.knownLocations:
+        #         try:
+        #             search = re.search(str(loc), body)
+        #             if (search is not None):
+        #                 final.add(loc)
+        #         except Exception:
+        #             pass
+                
+                
 
-        res = set(filter(self.cleanLoc, res))
-        self.knownLocations = self.knownLocations.union(res)
-
-        return res
-
-    # def get_continuous_chunks(self, text, label):
-    #     chunked = ne_chunk(pos_tag(word_tokenize(text)))
-    #     prev = None
-    #     continuous_chunk = []
-    #     current_chunk = []
-
-    #     for subtree in chunked:
-    #         if type(subtree) == Tree and subtree.label() == label:
-    #             current_chunk.append(" ".join([token for token, pos in subtree.leaves()]))
-    #         elif current_chunk:
-    #             named_entity = " ".join(current_chunk)
-    #             if named_entity not in continuous_chunk:
-    #                 continuous_chunk.append(named_entity)
-    #                 current_chunk = []
-    #         else:
-    #             continue
-
-    #     return continuous_chunk
+        # res = set(filter(self.cleanLoc, final))
+        # self.knownLocations = self.knownLocations.union(res)
+        # print("LOCATION LIST: ", res)
+        # return res
 
     def get_continuous_chunks(self, chunked):
         prev = None
@@ -132,38 +134,45 @@ class DataExtractor():
                 continue
         return continuous_chunk
 
-    def extractSpeakerREGEX(self, header, body):
+    def cleanSpeakerList(self, speakers):
+        final = set()
+        temp = set()
+        for x in speakers:
+            x = re.sub(",", "", x)
+            x = re.sub("(\s?)(?:,|-|\/)(\s?).*", "", x)
+            x = re.sub("(\s?)\(.*", "", x)
+            temp.add(x)
+        
+        for x in temp:
+            if x != '':
+                self.knownSpeakers.add(x)
+                final.add(x)
+
+        # print("CLEAN SPEAKERS; ", speakers)
+        return final
+    def extractSpeaker(self, header, body):
         speakerList = []
         speaker_regex = re.compile(speaker_regx_str, re.IGNORECASE)
         flatten = lambda l: [item for sublist in l for item in sublist]
         speakerList.append(speaker_regex.findall(header))
+        speakerList = flatten(speakerList)
+        if(len(speakerList) > 0):
+            return self.cleanSpeakerList(speakerList)
         speakerList.append(speaker_regex.findall(body))
         speakerList = flatten(speakerList)
-        final = set()
-        for x in speakerList:
-            if x != []:
-                x = re.sub(",", "", x)
-                x = re.sub("(\s?)(?:,|-|\/)(\s).*", "", x)
-                x = re.sub("(\s?)\(.*", "", x)
-                final.add(x)
-                self.knownSpeakers.add(x)
+        global knownSpeakers
         if(len(speakerList) == 0):
-            # splitText = body.split()
-            #stop_words = set(stopwords.words('english')) 
+            for s in self.knownSpeakers:
+                    match = re.search(s, body.lower())
+                    if match is not None:
+                        self.knownSpeakers.add(s)
+                        speakerList.append(s)
+
+        if(len(speakerList) == 0): 
             joined = ' '.join(body.split())
-            results = self.tagger.nerStanford(joined, "PERSON")
-            # words = nltk.word_tokenize(joined)
-            # filtered = [w for w in words if not w in stop_words]
-            # chunked = ne_chunk(pos_tag(filtered))
-            # potentialSpeakers = self.get_continuous_chunks(chunked)
-            # print("INITIAL CHUNKS: ", chunked)
-            # print("SPEAKERS FROM CHUNKING ", potentialSpeakers)
-            return results
-            # chuinked = nltk.ne_chunk(nltk.pos_tag(words)
+            speakerList = self.tagger.nerStanford(joined, "PERSON")
 
-
-
-        return final
+        return self.cleanSpeakerList(speakerList)
 
     def extractSentences(self, text):
         return self.sent_detector.tokenize(text.strip())
@@ -172,18 +181,3 @@ class DataExtractor():
     def extractParagraphs(self, text):
         para = re.compile(paragraphRegex)
         return re.findall(para, text)
-
-
-
-    # def extractLocationNER(header, body):
-        # location_regx = re.compile(location_regx_str, re.IGNORECASE)
-        # locations = {match.group(1) for match in location_regx.finditer(header)}
-        # locations |= {match.group(1) for match in location_regx.finditer(body)}
-
-        # splittter = ' '.join(body)
-        # clean = re.sub("[^a-zA-Z\d\s:]{2,}", "", splittter)
-        # clean = re.sub("- - - -", "", clean)
-        # chunked = ne_chunk(pos_tag(word_tokenize(clean)))
-        # # chunked = ne_chunk(tagged)
-        # entities = get_continuous_chunks(chunked)
-        # return entities
