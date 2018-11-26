@@ -4,10 +4,13 @@ from nltk.tag import TrigramTagger
 from nltk.tag import DefaultTagger
 from nltk.corpus import brown
 import nltk
+from dateutil import parser as time_parser
 # from nltk.tag.stanford import NERTagger
-from nltk import ne_chunk, pos_tag, word_tokenize
+from nltk import ne_chunk, pos_tag, word_tokenize, sent_tokenize
 from nltk.tag import StanfordNERTagger
 from itertools import groupby
+from regex_store import *
+import re
 
 class Tagger():
     
@@ -50,4 +53,51 @@ class Tagger():
                 # print( " ".join(w for w, t in chunk))
         return set(results)
     
+    def split_on_tags(self,text, tag):
+        return re.split(r'</?{}>'.format(tag), text)
+
+    def tag_paragraphs(self, text):
+        text = '\n\n{}\n\n'.format(text.strip('\n'))
+        para = re.compile(paragraphRegex)
+        for match in para.finditer(text):
+            paragraph = match.group(1)
+            if paragraph:
+                text = text.replace(paragraph, '<paragraph>{}</paragraph>'.format(paragraph))
+
+        return text.strip()
+
+    def tag_sentences(self, text):
+        text_parts = self.split_on_tags(text, 'paragraph')
+        sentences = []
+        for part in text_parts:
+            sentences.extend(sent_tokenize(part.strip()))
+
+        # filter everything that is not a proper sentence
+        sentences = list(filter(lambda s: re.match(not_sentence_regx_str, s), sentences))
+        for sent in sentences:
+            text = text.replace(sent, '<sentence>{}</sentence>'.format(sent))
+
+        return text
     
+    def tagTimes(self, stime, etime, text):
+
+        if not etime and not stime:
+            return text
+        textHolder = text
+        # time_regx = re.compile(time_regx_str)
+
+        # for time_str in set(time_regx.findall(textHolder)):
+        #     time = time_parser.parse(time_str).time()
+        #     if time_parser.parse(stime) == time:
+        #         textHolder = re.sub(time_str, '<stime>{}</stime>'.format(stime), text)
+        #         # textHolder = text.replace(time_str, '<stime>{}</stime>'.format(time_str))
+        #     elif etime:
+        #         if time_parser.parse(etime) == time:
+        #             textHolder = re.sub(time_str, '<etime>{}</etime>'.format(etime), text)
+                # textHolder = text.replace(time_str, '<etime>{}</etime>'.format(time_str))
+        if stime:
+            textHolder = re.sub(stime, '<stime>{}</stime>'.format(stime), text)
+        if etime:
+            textHolder = re.sub(etime, '<etime>{}</etime>'.format(etime), text)
+        
+        return textHolder

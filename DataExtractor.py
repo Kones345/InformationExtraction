@@ -87,36 +87,6 @@ class DataExtractor():
         else:
             return locations
 
-        # pos_location_regx = re.compile(pos_location_regx_str, re.IGNORECASE)
-        # tagged_body = self.tagger.tagPOS(body)
-        
-        # taggedLocations = set()
-        # tags = pos_location_regx.finditer(tagged_body)
-        # tagged_locations = {match.group(1) for match in pos_location_regx.finditer(tagged_body)}
-        # tagged_locations = {re.sub(pos_tags_regx_str, '', location).strip() for location in tagged_locations}
-
-        # res = locations.union(tagged_locations)
-        # final = set()
-        # for x in res:
-        #     if x != '':
-        #         final.add(x)
-        # # print(res)
-        # global knownLocations
-        # if (len(final) == 0):
-        #     for loc in self.knownLocations:
-        #         try:
-        #             search = re.search(str(loc), body)
-        #             if (search is not None):
-        #                 final.add(loc)
-        #         except Exception:
-        #             pass
-                
-                
-
-        # res = set(filter(self.cleanLoc, final))
-        # self.knownLocations = self.knownLocations.union(res)
-        # print("LOCATION LIST: ", res)
-        # return res
 
     def get_continuous_chunks(self, chunked):
         prev = None
@@ -174,10 +144,10 @@ class DataExtractor():
 
         return self.cleanSpeakerList(speakerList)
 
-    def extractSentences(self, text):
-        return self.sent_detector.tokenize(text.strip())
+    # def extractSentences(self, text):
+    #     return self.sent_detector.tokenize(text.strip())
 
     
-    def extractParagraphs(self, text):
-        para = re.compile(paragraphRegex)
-        return re.findall(para, text)
+    # def extractParagraphs(self, text):
+    #     para = re.compile(paragraphRegex)
+    #     return re.findall(para, text)

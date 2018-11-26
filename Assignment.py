@@ -53,6 +53,8 @@ locationFound = 0
 noLocation = 0
 speakersFound  = 0
 noSpeakers = 0
+paraFound = 0
+noParas = 0
 foundSpeakers = []
 #Extracting files
 for file in os.listdir(directory):
@@ -71,29 +73,16 @@ for file in os.listdir(directory):
 
             
             stime, etime = extractor.extractTime(header)
-            # tagged = tagPOS(body)
-            # print(tagged)
-            locations = extractor.extractLocation(header, body)
-            if(len(locations) > 0):
-                locationFound +=1
-            else:
-                noLocation += 1
+            # locations = extractor.extractLocation(header, body)
+            # if(len(locations) > 0):
+            #     locationFound +=1
+            # else:
+            #     noLocation += 1
             # print("TIME: " + stime + " ", etime)
             print()
             print(filename)
             print()
-            # print("HEADER:")
-            # print()
-            # print(header)
-            # print()
-            # print("BODY:")
-            # print()
-            # print(body)
-            # print()
-            # print("LOCATIONS REGEX: ")
-            print(locations) 
-            # print()
-            # print('Speakers')
+       
             # speakers = extractor.extractSpeaker(header, body)
             # foundSpeakers.append(speakers)
             # print(speakers)
@@ -106,14 +95,27 @@ for file in os.listdir(directory):
             # print()
             # print("SENTENCES: ", extractor.extractSentences(body))
             # print()
-            # print("PARAGRAPHS: ", extractor.extractParagraphs(body))
+            # para = extractor.extractParagraphs(body)
+            para = extractor.tagger.tag_paragraphs(body)
+            sents = extractor.tagger.tag_sentences(para)
+            timeTagged = extractor.tagger.tagTimes(stime, etime,placeholder)
+            print("PARAGRAPHS: ", para)
+            print("BODY: ", body)
+            print("FINAL: ", sents)
+            print("TIME: ", timeTagged)
+            if len(para) > 0 :
+                paraFound +=1
+            noParas += 1
+
+    
         
         continue
 
-print(locationFound, noLocation)
-print(locationFound/(locationFound + noLocation))
+# print(locationFound, noLocation)
+# print(locationFound/(locationFound + noLocation))
 # print(foundSpeakers)
 # print(speakersFound, noSpeakers)
 # print(speakersFound/(speakersFound + noSpeakers))
+print(paraFound/(paraFound + noParas))
 os.system("say 'Program Complete'")
 
