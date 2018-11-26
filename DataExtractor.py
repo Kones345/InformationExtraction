@@ -11,7 +11,7 @@ from nltk.tree import Tree
 from nltk.corpus import stopwords
 import nltk.data
 from dateutil import parser as time_parser
-
+from pathlib import Path
 #Class to extract data from the text
 class DataExtractor():
 
@@ -29,6 +29,30 @@ class DataExtractor():
 
     def __init__(self):
         self.sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
+    
+
+    def train(self,path):
+        knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
+
+        trainingPath = 'data/training'
+        pathlist = Path(trainingPath).glob('**/*.txt')
+        for path in pathlist:
+            p = str(path)
+            with open(p, 'r', encoding='utf-8') as f:
+                text = (f.read()).lower()
+                speakers = set(re.findall(knownSpeakersRegx, text))
+                if len(speakers) > 0:
+                    for speaker in speakers:
+                        speaker = re.sub(r'[^\w\s]','',speaker)
+                        self.knownSpeakers.add(speaker)
+                
+                locations = set(re.findall(self.knownLocationRegx, text))
+                if len(locations) > 0:
+                    for loc in locations:
+                        loc = re.sub(deadTag, "", loc)
+                        loc = re.sub(deadTag, "", loc)
+                        loc = re.sub(r'[^\w\s]','',loc)
+                        self.knownLocations.add(loc)
 
     def extractTime(self,text):
 
@@ -119,8 +143,9 @@ class DataExtractor():
                 self.knownSpeakers.add(x)
                 final.add(x)
 
-        # print("CLEAN SPEAKERS; ", speakers)
         return final
+    
+    
     def extractSpeaker(self, header, body):
         speakerList = []
         speaker_regex = re.compile(speaker_regx_str, re.IGNORECASE)
