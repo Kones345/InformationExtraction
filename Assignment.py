@@ -73,7 +73,7 @@ for file in os.listdir(directory):
 
             
             stime, etime = extractor.extractTime(header)
-            # locations = extractor.extractLocation(header, body)
+            locations = extractor.extractLocation(header, body)
             # if(len(locations) > 0):
             #     locationFound +=1
             # else:
@@ -83,7 +83,7 @@ for file in os.listdir(directory):
             print(filename)
             print()
        
-            # speakers = extractor.extractSpeaker(header, body)
+            speakers = extractor.extractSpeaker(header, body)
             # foundSpeakers.append(speakers)
             # print(speakers)
             # if(len(speakers) > 0):
@@ -96,16 +96,22 @@ for file in os.listdir(directory):
             # print("SENTENCES: ", extractor.extractSentences(body))
             # print()
             # para = extractor.extractParagraphs(body)
-            para = extractor.tagger.tag_paragraphs(body)
-            sents = extractor.tagger.tag_sentences(para)
-            timeTagged = extractor.tagger.tagTimes(stime, etime,placeholder)
-            print("PARAGRAPHS: ", para)
-            print("BODY: ", body)
-            print("FINAL: ", sents)
-            print("TIME: ", timeTagged)
-            if len(para) > 0 :
-                paraFound +=1
-            noParas += 1
+            body = extractor.tagger.tag_paragraphs(body)
+            body = extractor.tagger.tag_sentences(body)
+
+            seminar = header + '\n\n' + body
+            seminar = extractor.tagger.tagTimes(stime, etime,seminar)
+            seminar = extractor.tagger.tag_speakers(seminar, speakers)
+            seminar = extractor.tagger.tag_locations(locations, seminar)
+            # print("\nPARAGRAPHS: \n\n", para)
+            # print("\nBODY: \n", body)
+            # print("\n\nFINAL: \n", sents)
+            # print("\n\nTIME: \n\n", timeTagged)
+            # print("\n\nSPEAKERS TAGGED: \n\n", speakersTagged)
+            print("\n\n FINAL: \n\n ", seminar)
+            # if len(para) > 0 :
+            #     paraFound +=1
+            # noParas += 1
 
     
         

@@ -10,6 +10,7 @@ import universities
 from nltk.tree import Tree
 from nltk.corpus import stopwords
 import nltk.data
+from dateutil import parser as time_parser
 
 #Class to extract data from the text
 class DataExtractor():
@@ -143,11 +144,3 @@ class DataExtractor():
             speakerList = self.tagger.nerStanford(joined, "PERSON")
 
         return self.cleanSpeakerList(speakerList)
-
-    # def extractSentences(self, text):
-    #     return self.sent_detector.tokenize(text.strip())
-
-    
-    # def extractParagraphs(self, text):
-    #     para = re.compile(paragraphRegex)
-    #     return re.findall(para, text)

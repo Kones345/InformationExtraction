@@ -84,20 +84,30 @@ class Tagger():
         if not etime and not stime:
             return text
         textHolder = text
-        # time_regx = re.compile(time_regx_str)
+        time_regx = re.compile(time_regx_str)
 
-        # for time_str in set(time_regx.findall(textHolder)):
-        #     time = time_parser.parse(time_str).time()
-        #     if time_parser.parse(stime) == time:
-        #         textHolder = re.sub(time_str, '<stime>{}</stime>'.format(stime), text)
-        #         # textHolder = text.replace(time_str, '<stime>{}</stime>'.format(time_str))
-        #     elif etime:
-        #         if time_parser.parse(etime) == time:
-        #             textHolder = re.sub(time_str, '<etime>{}</etime>'.format(etime), text)
-                # textHolder = text.replace(time_str, '<etime>{}</etime>'.format(time_str))
-        if stime:
-            textHolder = re.sub(stime, '<stime>{}</stime>'.format(stime), text)
-        if etime:
-            textHolder = re.sub(etime, '<etime>{}</etime>'.format(etime), text)
+        for time_str in set(time_regx.findall(textHolder)):
+            time = time_parser.parse(time_str).time()
+            if time_parser.parse(stime).time() == time:
+                textHolder = re.sub(time_str, '<stime>{}</stime>'.format(stime), textHolder)
+
+            elif etime:
+                if time_parser.parse(etime).time() == time:
+                    textHolder = re.sub(time_str, '<etime>{}</etime>'.format(etime), textHolder)
+
         
         return textHolder
+    
+    def tag_locations(self, locations, text):
+        for loc in locations:
+            insensitive_loc = re.compile(r'({})'.format(re.escape(loc)), re.IGNORECASE)
+            text = re.sub(insensitive_loc, '<location> '+ loc + '</location>', text)
+
+        return text
+
+    def tag_speakers(self, text, speakers):
+        for spk in speakers:
+            insensitive_spk = re.compile(r'({})'.format(re.escape(spk)))
+            text = re.sub(insensitive_spk, r'<speaker>\1</speaker>', text)
+
+        return text
