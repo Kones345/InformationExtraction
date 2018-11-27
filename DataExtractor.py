@@ -15,9 +15,6 @@ from pathlib import Path
 #Class to extract data from the text
 class DataExtractor():
 
-    #Instance of the tagger class
-    # tagger = Tagger()
-
     #Regex to be used lated in the known loacation
     knownLocationRegx = re.compile(knownLocationRegxStr)
     
@@ -30,7 +27,6 @@ class DataExtractor():
     def __init__(self):
         self.sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
     
-
     def train(self,path):
         knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
 
@@ -147,7 +143,6 @@ class DataExtractor():
 
         return final
     
-    
     def extractSpeaker(self, header, body, tagger):
         speakerList = []
         speaker_regex = re.compile(speaker_regx_str, re.IGNORECASE)
@@ -158,7 +153,7 @@ class DataExtractor():
             return self.cleanSpeakerList(speakerList)
         speakerList.append(speaker_regex.findall(body))
         speakerList = flatten(speakerList)
-        global knownSpeakers
+        
         if(len(speakerList) == 0):
             for s in self.knownSpeakers:
                     match = re.search(s, body.lower())

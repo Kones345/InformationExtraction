@@ -5,7 +5,6 @@ from nltk.tag import DefaultTagger
 from nltk.corpus import brown
 import nltk
 from dateutil import parser as time_parser
-# from nltk.tag.stanford import NERTagger
 from nltk import ne_chunk, pos_tag, word_tokenize, sent_tokenize
 from nltk.tag import StanfordNERTagger
 from itertools import groupby
@@ -97,8 +96,6 @@ class Tagger():
             elif etime:
                 if time_parser.parse(etime).time() == time:
                     textHolder = re.sub(time_str, '<etime>{}</etime>'.format(etime), textHolder)
-
-        
         return textHolder
     
     def tag_locations(self, locations, text):
