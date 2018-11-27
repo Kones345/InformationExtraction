@@ -111,3 +111,4 @@ class Tagger():
             text = re.sub(insensitive_spk, r'<speaker>\1</speaker>', text)
 
         return text
+

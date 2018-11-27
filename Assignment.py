@@ -14,6 +14,7 @@ from regex_store import *
 from DataExtractor import DataExtractor
 
 import os
+import errno
 
 re.compile(deadTag)
 re.compile(deadTag1)
@@ -21,28 +22,14 @@ re.compile(deadTag1)
 extractor = DataExtractor()
 extractor.train('data/training')
 
-# knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
-
-
-# trainingPath = 'data/training'
-# pathlist = Path(trainingPath).glob('**/*.txt')
-# for path in pathlist:
-#     p = str(path)
-#     with open(p, 'r', encoding='utf-8') as f:
-#         text = (f.read()).lower()
-#         speakers = set(re.findall(knownSpeakersRegx, text))
-#         if len(speakers) > 0:
-#             for speaker in speakers:
-#                 speaker = re.sub(r'[^\w\s]','',speaker)
-#                 extractor.knownSpeakers.add(speaker)
-        
-#         locations = set(re.findall(extractor.knownLocationRegx, text))
-#         if len(locations) > 0:
-#             for loc in locations:
-#                 loc = re.sub(deadTag, "", loc)
-#                 loc = re.sub(deadTag, "", loc)
-#                 loc = re.sub(r'[^\w\s]','',loc)
-#                 extractor.knownLocations.add(loc)
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 #Setting up directory
 mypath = os.getcwd() + '/data/untagged/'
@@ -82,9 +69,13 @@ for file in os.listdir(directory):
             seminar = extractor.tagger.tag_speakers(seminar, speakers)
             seminar = extractor.tagger.tag_locations(locations, seminar)
 
-            print("\n\n FINAL: \n\n ", seminar)
+            outLocation = "out/"
+            mkdir_p(outLocation)
+            out = open(outLocation + filename,"w+")
+            out.write(seminar)
+            out.close()
 
         continue
-
-os.system("say 'Program Complete'")
-
+seconds = time.time() - start_time
+m, s = divmod(seconds, 60)
+print("There program has been running for {0} minutes and {1} seconds".format(m,round(s)))
