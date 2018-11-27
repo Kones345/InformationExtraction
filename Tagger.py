@@ -11,6 +11,9 @@ from nltk.tag import StanfordNERTagger
 from itertools import groupby
 from regex_store import *
 import re
+from Utils import Utils
+import os
+from time import sleep
 
 #Class to handle tagging of seminar emails
 class Tagger():
@@ -112,3 +115,42 @@ class Tagger():
 
         return text
 
+    def tagSeminar(self, path, directory, extractor, noOfFiles):
+        Utils.printProgressBar(0, noOfFiles, prefix = 'Progress:', suffix = 'Complete', length = 50)
+        i = 0
+        #Extracting files
+        for file in os.listdir(directory):
+            filename = os.fsdecode(file)
+            if filename.endswith(".txt"): 
+                with open(path + filename, 'r', encoding='utf-8') as f:
+                    #Read in email
+                    placeholder= f.read()
+
+                    #Splits the text into header and body
+                    try:
+                        header, body = re.search(header_body_regx_str, placeholder).groups()
+                    except:
+                        print(filename)
+                        continue
+
+                    stime, etime = extractor.extractTime(header)
+                    locations = extractor.extractLocation(header, body, self)       
+                    speakers = extractor.extractSpeaker(header, body, self)
+
+                    body = self.tag_paragraphs(body)
+                    body = self.tag_sentences(body)
+
+                    seminar = header + '\n\n' + body
+                    seminar = self.tagTimes(stime, etime,seminar)
+                    seminar = self.tag_speakers(seminar, speakers)
+                    seminar = self.tag_locations(locations, seminar)
+
+                    outLocation = "out/"
+                    Utils.mkdir_p(outLocation)
+                    out = open(outLocation + filename,"w+")
+                    out.write(seminar)
+                    out.close()
+                    sleep(0.1)
+                    Utils.printProgressBar(i + 1, noOfFiles, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                    i+=1
+                continue

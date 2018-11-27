@@ -9,7 +9,7 @@ timePattern6 = timePattern4 + ' - (' + timePattern3 + ')'
 time_regx_str = r'\b([0-9]{1,2}(?::[0-9]{2}\s?(?:AM|PM|am|pm|a\.m|p\.m)|:[0-9]{2}|\s?(?:AM|PM|am|pm|a\.m|p\.m)))\b'
 speaker_regx_str = r'(?:\b(?:Speaker|Name|Who)\b:\s*)(.*?,|.*)'
 # speaker_regx_str = r'(?:\b(?:Speaker|Name|Who)\b:\s*)(.*?|.*)(?:,|-|\/)'
-
+header_body_regx_str = r'([\s\S]+(?:\b.+\b:.+\n\n|\bAbstract\b:))([\s\S]*)'
 knownLocationRegxStr = '<location>(.+)<\/location>'
 knownSpeakersRegxStr = '<speaker>(?:Dr|Mr|Ms|Mrs|Prof|Sir|Professor)?\.?\s?([a-zA-Z ]+),?\s?(?:PhD)?<\/speaker>'
 deadTag = '<\/sentence>'

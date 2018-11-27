@@ -16,7 +16,7 @@ from pathlib import Path
 class DataExtractor():
 
     #Instance of the tagger class
-    tagger = Tagger()
+    # tagger = Tagger()
 
     #Regex to be used lated in the known loacation
     knownLocationRegx = re.compile(knownLocationRegxStr)
@@ -34,6 +34,8 @@ class DataExtractor():
     def train(self,path):
         knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
 
+        re.compile(deadTag)
+        re.compile(deadTag1)
         trainingPath = 'data/training'
         pathlist = Path(trainingPath).glob('**/*.txt')
         for path in pathlist:
@@ -93,7 +95,7 @@ class DataExtractor():
             result = None
         return  result is None and x != "" and (x.isdigit()) == False and x != "room" and x!= "Room"
     
-    def extractLocation(self, header, body):
+    def extractLocation(self, header, body, tagger):
         location_regx = re.compile(location_regx_str, re.IGNORECASE)
         locations = set()
         locationList = []
@@ -102,7 +104,7 @@ class DataExtractor():
 
         if(len(locations) == 0):
             joined = ' '.join(body.split())
-            locationList = self.tagger.nerStanford(joined, "LOCATION")
+            locationList = tagger.nerStanford(joined, "LOCATION")
             for x in locationList:
                 if x in self.knownLocations:
                     locations.add(x)
@@ -146,7 +148,7 @@ class DataExtractor():
         return final
     
     
-    def extractSpeaker(self, header, body):
+    def extractSpeaker(self, header, body, tagger):
         speakerList = []
         speaker_regex = re.compile(speaker_regx_str, re.IGNORECASE)
         flatten = lambda l: [item for sublist in l for item in sublist]
@@ -166,6 +168,6 @@ class DataExtractor():
 
         if(len(speakerList) == 0): 
             joined = ' '.join(body.split())
-            speakerList = self.tagger.nerStanford(joined, "PERSON")
+            speakerList = tagger.nerStanford(joined, "PERSON")
 
         return self.cleanSpeakerList(speakerList)
