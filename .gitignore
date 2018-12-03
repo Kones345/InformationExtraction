@@ -10,4 +10,4 @@
 *.json
 __pycache__/regex_store.cpython-37.pyc
 /out/
-
+glove.6B.100d.txt

@@ -48,7 +48,7 @@ class DataExtractor():
                 if len(locations) > 0:
                     for loc in locations:
                         loc = re.sub(deadTag, "", loc)
-                        loc = re.sub(deadTag, "", loc)
+                        loc = re.sub(deadTag1, "", loc)
                         loc = re.sub(r'[^\w\s]','',loc)
                         self.knownLocations.add(loc)
 
