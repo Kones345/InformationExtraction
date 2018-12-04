@@ -14,48 +14,50 @@ from Utils import Utils
 import os
 from time import sleep
 
-#Class to handle tagging of seminar emails
-class Tagger():
-    
+
+# Class to handle tagging of seminar emails
+class Tagger:
+
     # backoff
     def __init__(self):
-        self.backoff =  self.backoff_tagger(backoff=DefaultTagger('NN'))
+        self.backoff = self.backoff_tagger(backoff=DefaultTagger('NN'))
         self.st = StanfordNERTagger(
             '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/classifiers/english.all.3class.distsim.crf.ser.gz',
             '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/stanford-ner.jar',
-         encoding='utf-8')
+            encoding='utf-8')
 
     train_sents = brown.tagged_sents()[:48000]
+
     def backoff_tagger(self, backoff=None):
-        
-        for cls in [UnigramTagger, BigramTagger, TrigramTagger] :
+
+        for cls in [UnigramTagger, BigramTagger, TrigramTagger]:
             backoff = cls(self.train_sents, backoff=backoff)
         return backoff
-    
-    def tagPOS(self,body):
-        
+
+    def tagPOS(self, body):
+
         sents = nltk.tokenize.sent_tokenize(body)
         for i in range(0, len(sents)):
             sents[i] = nltk.tokenize.word_tokenize(sents[i])
-        
+
         tagged = self.backoff.tag_sents(sents)
         flatten = lambda l: [item for sublist in l for item in sublist]
         tagged = flatten(tagged)
         processed_body = ['{}{{*{}*}}'.format(word, tag) for (word, tag) in tagged]
 
         return ' '.join(processed_body)
-    
+
     def nerStanford(self, text, entitiy):
         tokenized_text = word_tokenize(text)
         classified_text = self.st.tag(tokenized_text)
         results = []
-        for tag, chunk in groupby(classified_text, lambda x:x[1]):
+        for tag, chunk in groupby(classified_text, lambda x: x[1]):
             if tag == entitiy:
                 results.append(" ".join(w for w, t in chunk))
                 # print( " ".join(w for w, t in chunk))
         return set(results)
-    
-    def split_on_tags(self,text, tag):
+
+    def split_on_tags(self, text, tag):
         return re.split(r'</?{}>'.format(tag), text)
 
     def tag_paragraphs(self, text):
@@ -80,7 +82,7 @@ class Tagger():
             text = text.replace(sent, '<sentence>{}</sentence>'.format(sent))
 
         return text
-    
+
     def tagTimes(self, stime, etime, text):
 
         if not etime and not stime:
@@ -97,11 +99,11 @@ class Tagger():
                 if time_parser.parse(etime).time() == time:
                     textHolder = re.sub(time_str, '<etime>{}</etime>'.format(etime), textHolder)
         return textHolder
-    
+
     def tag_locations(self, locations, text):
         for loc in locations:
             insensitive_loc = re.compile(r'({})'.format(re.escape(loc)), re.IGNORECASE)
-            text = re.sub(insensitive_loc, '<location> '+ loc + '</location>', text)
+            text = re.sub(insensitive_loc, '<location> ' + loc + '</location>', text)
 
         return text
 
@@ -113,17 +115,17 @@ class Tagger():
         return text
 
     def tagSeminar(self, path, directory, extractor, noOfFiles):
-        Utils.printProgressBar(0, noOfFiles, prefix = 'Progress:', suffix = 'Complete', length = 50)
+        Utils.printProgressBar(0, noOfFiles, prefix='Progress:', suffix='Complete', length=50)
         i = 0
-        #Extracting files
+        # Extracting files
         for file in os.listdir(directory):
             filename = os.fsdecode(file)
-            if filename.endswith(".txt"): 
+            if filename.endswith(".txt"):
                 with open(path + filename, 'r', encoding='utf-8') as f:
-                    #Read in email
-                    placeholder= f.read()
+                    # Read in email
+                    placeholder = f.read()
 
-                    #Splits the text into header and body
+                    # Splits the text into header and body
                     try:
                         header, body = re.search(header_body_regx_str, placeholder).groups()
                     except:
@@ -131,23 +133,23 @@ class Tagger():
                         continue
 
                     stime, etime = extractor.extractTime(header)
-                    locations = extractor.extractLocation(header, body, self)       
+                    locations = extractor.extractLocation(header, body, self)
                     speakers = extractor.extractSpeaker(header, body, self)
 
                     body = self.tag_paragraphs(body)
                     body = self.tag_sentences(body)
 
                     seminar = header + '\n\n' + body
-                    seminar = self.tagTimes(stime, etime,seminar)
+                    seminar = self.tagTimes(stime, etime, seminar)
                     seminar = self.tag_speakers(seminar, speakers)
                     seminar = self.tag_locations(locations, seminar)
 
                     outLocation = "out/"
                     Utils.mkdir_p(outLocation)
-                    out = open(outLocation + filename,"w+")
+                    out = open(outLocation + filename, "w+")
                     out.write(seminar)
                     out.close()
                     sleep(0.1)
-                    Utils.printProgressBar(i + 1, noOfFiles, prefix = 'Progress:', suffix = 'Complete', length = 50)
-                    i+=1
+                    Utils.printProgressBar(i + 1, noOfFiles, prefix='Progress:', suffix='Complete', length=50)
+                    i += 1
                 continue
