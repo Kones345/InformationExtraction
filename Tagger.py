@@ -144,9 +144,9 @@ class Tagger:
                     seminar = self.tag_speakers(seminar, speakers)
                     seminar = self.tag_locations(locations, seminar)
 
-                    outLocation = "out/"
-                    Utils.mkdir_p(outLocation)
-                    out = open(outLocation + filename, "w+")
+                    out_location = "out/"
+                    Utils.mkdir_p(out_location)
+                    out = open(out_location + filename, "w+")
                     out.write(seminar)
                     out.close()
                     sleep(0.1)

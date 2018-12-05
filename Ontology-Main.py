@@ -1,72 +1,17 @@
 import re
-import spacy
-import itertools
+
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import gensim
-from gensim import corpora
+from nltk.stem import PorterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
-import string
-import os
 from pathlib import Path
 
-# path = '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/untagged/'
-
-# stop_words = set(stopwords.words('english'))
-# stop_words.add('lecture')
-# stop_words.add('seminar')
-# exclude = set(string.punctuation)
-
-# special_char_regx_str = r'([^a-zA-Z ]+?)'
-# cleanTextRegex = re.compile(special_char_regx_str)
-
-# def clean(doc):
-# 	stop_free = " ".join([i for i in doc.lower().split() if i not in stop_words])
-# 	punc_free = ''.join(ch for ch in stop_free if ch not in exclude)
-# 	normalized = " ".join(lemma.lemmatize(word) for word in punc_free.split())
-
-# 	return normalized
-
-
-# from regex_store import *
-# documents = []
-# untagged = 'data/untagged/'
-# pathlist = Path(untagged).glob('**/*.txt')
-# for path in pathlist:
-# 	p = str(path)
-# 	with open(p, 'r', encoding='utf-8') as f:
-# 		text = f.read()
-# 		#Splits the text into header and body
-# 		try:
-# 			header, body = re.search(header_body_regx_str, text).groups()
-# 		except:
-
-# 			continue
-# 		body = re.sub(cleanTextRegex, '',body)
-# 		documents.append(' '.join(body.split()))
-
-# doc_clean = [clean(doc).split() for doc in documents] 
-
-# # print(doc_clean)
-
-# dictionary = corpora.Dictionary(doc_clean)
-# print(dictionary)
-# # Converting list of documents (corpus) into Document Term Matrix using dictionary prepared above.
-# doc_term_matrix = [dictionary.doc2bow(doc) for doc in doc_clean]
-
-# # Creating the object for LDA model using gensim library
-# Lda = gensim.models.ldamodel.LdaModel
-
-# # Running and Trainign LDA model on the document term matrix.
-# ldamodel = Lda(doc_term_matrix, num_topics=3, id2word = dictionary, passes=50)
-
-# print(ldamodel.print_topics(num_topics=10, num_words=10))
 data = {
     'Computer Science': ['software', 'object-oriented', 'architecture', 'design', 'product', 'debug', 'breakpoint',
-                         'planning', 'a*', 'd*','development', 'quality', 'tests', 'artificial', 'intelligence', 'recursion',
+                         'planning', 'a*', 'd*', 'development', 'quality', 'tests', 'artificial', 'intelligence',
+                         'recursion',
                          'iterative',
                          'machine learning', 'ai', 'robotics', 'vision', 'data', 'complexity', 'search',
                          'nlp', 'natural language processing', 'ieee', 'navigation', 'robot', 'planning',
@@ -76,19 +21,21 @@ data = {
                          'render', 'parallel', 'distributed', 'network', 'synchronization', 'efficient',
                          'synchronous', 'asynchronous', 'thread', 'multi', 'breach', 'cryptography', 'backdoor',
                          'encryption', 'decryption', 'hacking', 'algorithm', 'code', 'programming', 'java', 'python',
-                         'ruby', 'robotics', 'circuit', 'computing'],
+                         'ruby', 'robotics', 'circuit', 'computing', 'systems', 'framework'],
     'Biology': ['bio', 'disease', 'immune', 'immunonoculation', 'biological', 'genome', 'biochemistry', 'molecules',
-                'medicine', 'clinic', 'cancer', 'health', 'cellular', 'cells', 'respiration', 'brain', 'neurological'],
+                'medicine', 'clinic', 'cancer', 'health', 'cellular', 'cells', 'respiration', 'brain', 'neurological',
+                'imaging', 'illness', 'sick', 'disease', 'healthcare'],
     'Chemistry': ['chemistry', 'drugs', 'polymers', 'graft', 'extruders', 'nanotechnology', 'fluids', 'thermodynamic',
                   'microemulsions', 'flourescence', 'water', 'dissolved', 'exothermic', 'endothermic', 'alcohol'],
-    'Electronics': ['semiconductor', 'electronic', 'circuit', 'integrated', 'multimeter', 'voltage', 'controller'],
-    'Physics': ['physics', 'thermodynamics', 'nanotechnology', 'magnetism', 'frequency', 'nuclear', 'stars',
-                'cosmology', 'black', 'hole',
-                'resistance', 'voltage', 'current', 'mechanics', 'momentum', 'velocity', 'acceleration', 'particles',
-                'electricity',
-                'fields', 'astrophysics', 'photon', 'radiation', 'electromagnet', 'lepton', 'diffraction',
-                'interference', 'motion',
-                'projectile', 'gravity', 'telescope', 'Quasars'],
+    'Physics and Astronomy': ['physics', 'thermodynamics', 'nanotechnology', 'magnetism', 'frequency', 'nuclear',
+                              'stars',
+                              'cosmology', 'black', 'hole', 'resistance', 'voltage', 'current', 'mechanics', 'momentum',
+                              'velocity',
+                              'acceleration', 'particles', 'electricity', 'fields', 'astrophysics', 'photon',
+                              'radiation', 'electromagnet', 'lepton', 'diffraction',
+                              'interference', 'motion',
+                              'projectile', 'gravity', 'telescope', 'Quasars', 'semiconductor', 'electronic', 'circuit',
+                              'integrated', 'multimeter', 'voltage', 'controller'],
     'Politics': ['politics', 'social', 'public', 'policy', 'issue', 'environment', 'trend',
                  'economy', 'media', 'global', 'regulations', 'international', 'crisis',
                  'activist', 'prospects', 'welfare', 'community', 'movement', 'liberal', 'republican',
@@ -108,7 +55,18 @@ data = {
                  'office', 'economy', 'management', 'equity', 'competition', 'revenue', 'profit'],
     'Education': ['education', 'academia', 'alumni', 'teaching', 'school', 'graduate', 'academic', 'grade', 'degree',
                   'university', 'college', 'school', 'nursery', 'homework', 'assignment', 'dissertation', 'doctorate',
-                  'masters', 'phd', 'research']
+                  'masters', 'phd', 'research'],
+    'Engineering': ['material', 'engineering', 'environment', 'design', '3d', 'aeroacoustics', 'aerothermodynamics',
+                    'air', 'turbulence', 'bridge', 'collapse', 'building', 'cad', 'car', 'fiber', 'optics',
+                    'geoengineering', 'nano', 'nanotubes', 'stereo', 'tunnel'],
+    'Mathematics': ['anlge', 'measure', 'prove', 'solve', 'problem', 'equation', 'graph', 'plane', 'line', 'axis', 'algebra',
+                    'adjacent', 'coefficient', 'frequency', 'circumference', 'denominator', 'distribution', 'polygon',
+                    'expression', 'factorise', 'formula', 'frequency', 'density', 'gradient', 'hcf', 'indices',
+                    'integer', 'quartile', 'rational', 'irrational', 'lcm', 'average', 'mean', 'median', 'mode',
+                    'numerator', 'even', 'odd', 'parallel', 'perpendicular', 'probability', 'product', 'prime',
+                    'quadratic', 'remainder', 'rotation', 'rotate', 'sum', 'symmetry', 'tangent', 'volume',
+                    'solve'],
+    'Other': []
 
 }
 
@@ -149,23 +107,11 @@ def process(query):
 
 stop_words = set(stopwords.words('english'))
 extra_stop_words = {'lecture', 'seminar', 'talk', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
-                    'saturday', 'sunday', 'telecastseminar', 'today', 'weh', 'adamson', 'wing', 'hall', 'baker'
-                    'rescheduled', 'am', 'pm', 'reminder', 'jan', 'feb', 'march', 'apr','may', 'jun', 'jul', 'aug',
-                    'sep', 'oct', 'nov', 'dec', 'spring', 'summer', 'autumn', 'winter', 'moved'}
+                    'saturday', 'sunday', 'telecastseminar', 'today', 'weh', 'adamson', 'wing', 'hall', 'baker',
+                    'rescheduled', 'am', 'pm', 'reminder', 'jan', 'feb', 'march', 'apr', 'may', 'jun', 'jul', 'aug',
+                    'sep', 'oct', 'nov', 'dec', 'spring', 'summer', 'autumn', 'winter', 'moved', 'none'}
 
 stop_words = stop_words.union(extra_stop_words)
-# stop_words.add('lecture')
-# stop_words.add('seminar')
-# stop_words.add('talk')
-# stop_words.add('monday')
-# stop_words.add('tuesday')
-# stop_words.add('wednesday')
-# stop_words.add('thursday')
-# stop_words.add('friday')
-# stop_words.add('saturday')
-# stop_words.add('sunday')
-# stop_words.add('telecastseminar')
-# stop_words.add('today')
 
 fileid = '409'
 fileLoc = '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/untagged/' + fileid + '.txt'
@@ -177,6 +123,7 @@ lemma = WordNetLemmatizer()
 topicRegex = re.compile(topic_regx_str)
 cleanTextRegex = re.compile(special_char_regx_str)
 
+# ps = PorterStemmer()
 pathlist = Path(directory).glob('**/*.txt')
 for path in pathlist:
     p = str(path)
@@ -192,10 +139,24 @@ for path in pathlist:
         normalized = " ".join(lemma.lemmatize(word) for word in topic.split())
         word_tokens = word_tokenize(normalized)
         filtered_sentence = [w for w in word_tokens if not w in stop_words]
+        # filtered_sentence = [ps.stem(word) for word in filtered_sentence]
+
+        results = {'Computer Science': 0, 'Politics': 0, 'Biology': 0, 'Chemistry': 0, 'Physics and Astronomy': 0,
+                   'Languages': 0, 'Education': 0, 'Business': 0, 'Performing Arts': 0, 'Mathematics':0, 'Other':0, 'Engineering': 0}
+
+        # print(nltk.pos_tag(filtered_sentence))
+        tagged = nltk.pos_tag(filtered_sentence)
+        filtered_sentence = [key for key, value in tagged if value == 'NN' or value == 'NNS']
+        # print
         print(nltk.pos_tag(filtered_sentence))
         for word in filtered_sentence:
-            print('Result for %s: ' % word)
-            print(process(word))
-            print()
+            # print('Result for %s: ' % word)
+            resultStream = process(word)
+            if resultStream is not None:
 
-# print(process('robot'))
+                for key, value in resultStream.items():
+                    current_value = results[key]
+                    current_value += value
+                    results[key] = current_value
+        print(results)
+        print()
