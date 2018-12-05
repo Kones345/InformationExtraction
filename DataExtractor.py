@@ -9,7 +9,7 @@ from pathlib import Path
 
 # Class to extract data from the text
 class DataExtractor:
-    # Regex to be used lated in the known loacation
+    # Regex to be used later in the known location
     knownLocationRegx = re.compile(knownLocationRegxStr)
 
     # KNOWN SPEAKERS

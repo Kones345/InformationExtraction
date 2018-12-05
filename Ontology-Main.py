@@ -66,8 +66,7 @@ from pathlib import Path
 # print(ldamodel.print_topics(num_topics=10, num_words=10))
 data = {
     'Computer Science': ['software', 'object-oriented', 'architecture', 'design', 'product', 'debug', 'breakpoint',
-                         'planning', 'a*', 'd*'
-                                           'development', 'quality', 'tests', 'artificial', 'intelligence', 'recursion',
+                         'planning', 'a*', 'd*','development', 'quality', 'tests', 'artificial', 'intelligence', 'recursion',
                          'iterative',
                          'machine learning', 'ai', 'robotics', 'vision', 'data', 'complexity', 'search',
                          'nlp', 'natural language processing', 'ieee', 'navigation', 'robot', 'planning',
@@ -77,8 +76,8 @@ data = {
                          'render', 'parallel', 'distributed', 'network', 'synchronization', 'efficient',
                          'synchronous', 'asynchronous', 'thread', 'multi', 'breach', 'cryptography', 'backdoor',
                          'encryption', 'decryption', 'hacking', 'algorithm', 'code', 'programming', 'java', 'python',
-                         'ruby'],
-    'Biology': ['bio', 'disease', 'immune', 'immunomodulation', 'biological', 'genome', 'biochemistry', 'molecules',
+                         'ruby', 'robotics', 'circuit', 'computing'],
+    'Biology': ['bio', 'disease', 'immune', 'immunonoculation', 'biological', 'genome', 'biochemistry', 'molecules',
                 'medicine', 'clinic', 'cancer', 'health', 'cellular', 'cells', 'respiration', 'brain', 'neurological'],
     'Chemistry': ['chemistry', 'drugs', 'polymers', 'graft', 'extruders', 'nanotechnology', 'fluids', 'thermodynamic',
                   'microemulsions', 'flourescence', 'water', 'dissolved', 'exothermic', 'endothermic', 'alcohol'],
@@ -138,7 +137,7 @@ def process(query):
     except:
         for c in categories:
             scores[c] = 0
-        return scores
+        return None
 
     for word, embed in data_embeddings.items():
         category = categories[word]
@@ -149,8 +148,25 @@ def process(query):
 
 
 stop_words = set(stopwords.words('english'))
-stop_words.add('lecture')
-stop_words.add('seminar')
+extra_stop_words = {'lecture', 'seminar', 'talk', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+                    'saturday', 'sunday', 'telecastseminar', 'today', 'weh', 'adamson', 'wing', 'hall', 'baker'
+                    'rescheduled', 'am', 'pm', 'reminder', 'jan', 'feb', 'march', 'apr','may', 'jun', 'jul', 'aug',
+                    'sep', 'oct', 'nov', 'dec', 'spring', 'summer', 'autumn', 'winter', 'moved'}
+
+stop_words = stop_words.union(extra_stop_words)
+# stop_words.add('lecture')
+# stop_words.add('seminar')
+# stop_words.add('talk')
+# stop_words.add('monday')
+# stop_words.add('tuesday')
+# stop_words.add('wednesday')
+# stop_words.add('thursday')
+# stop_words.add('friday')
+# stop_words.add('saturday')
+# stop_words.add('sunday')
+# stop_words.add('telecastseminar')
+# stop_words.add('today')
+
 fileid = '409'
 fileLoc = '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/untagged/' + fileid + '.txt'
 directory = '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/untagged/'
@@ -176,7 +192,7 @@ for path in pathlist:
         normalized = " ".join(lemma.lemmatize(word) for word in topic.split())
         word_tokens = word_tokenize(normalized)
         filtered_sentence = [w for w in word_tokens if not w in stop_words]
-
+        print(nltk.pos_tag(filtered_sentence))
         for word in filtered_sentence:
             print('Result for %s: ' % word)
             print(process(word))
