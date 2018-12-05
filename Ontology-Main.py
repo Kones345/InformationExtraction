@@ -4,9 +4,9 @@ import numpy as np
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from nltk.stem import PorterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
 from pathlib import Path
+from collections import Counter
 
 data = {
     'Computer Science': ['software', 'object-oriented', 'architecture', 'design', 'product', 'debug', 'breakpoint',
@@ -21,7 +21,7 @@ data = {
                          'render', 'parallel', 'distributed', 'network', 'synchronization', 'efficient',
                          'synchronous', 'asynchronous', 'thread', 'multi', 'breach', 'cryptography', 'backdoor',
                          'encryption', 'decryption', 'hacking', 'algorithm', 'code', 'programming', 'java', 'python',
-                         'ruby', 'robotics', 'circuit', 'computing', 'systems', 'framework'],
+                         'ruby', 'robotics', 'circuit', 'computing', 'systems', 'framework', 'computer'],
     'Biology': ['bio', 'disease', 'immune', 'immunonoculation', 'biological', 'genome', 'biochemistry', 'molecules',
                 'medicine', 'clinic', 'cancer', 'health', 'cellular', 'cells', 'respiration', 'brain', 'neurological',
                 'imaging', 'illness', 'sick', 'disease', 'healthcare'],
@@ -49,10 +49,10 @@ data = {
                         'notes', 'instrument', 'orchestra', 'chopin', 'mozart', 'symphony', 'tickets', 'production',
                         'stage', 'cinema', 'movie',
                         'play'],
-    'Business': ['entrepreneurship', 'innovation', 'opportunities', 'customer',
+    'Business': ['entrepreneurship', 'opportunities', 'customer',
                  'finance', 'stock', 'exchange', 'money', 'investment', 'trader', 'bank', 'trend',
                  'interest', 'business', 'businessman', 'businesswoman', 'market', 'need', 'global', 'success',
-                 'office', 'economy', 'management', 'equity', 'competition', 'revenue', 'profit'],
+                 'office', 'economy', 'management', 'equity', 'competition', 'revenue', 'profit',],
     'Education': ['education', 'academia', 'alumni', 'teaching', 'school', 'graduate', 'academic', 'grade', 'degree',
                   'university', 'college', 'school', 'nursery', 'homework', 'assignment', 'dissertation', 'doctorate',
                   'masters', 'phd', 'research'],
@@ -65,7 +65,7 @@ data = {
                     'integer', 'quartile', 'rational', 'irrational', 'lcm', 'average', 'mean', 'median', 'mode',
                     'numerator', 'even', 'odd', 'parallel', 'perpendicular', 'probability', 'product', 'prime',
                     'quadratic', 'remainder', 'rotation', 'rotate', 'sum', 'symmetry', 'tangent', 'volume',
-                    'solve'],
+                    'solve', 'square', 'root', 'cube'],
     'Other': []
 
 }
@@ -108,8 +108,8 @@ def process(query):
 stop_words = set(stopwords.words('english'))
 extra_stop_words = {'lecture', 'seminar', 'talk', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
                     'saturday', 'sunday', 'telecastseminar', 'today', 'weh', 'adamson', 'wing', 'hall', 'baker',
-                    'rescheduled', 'am', 'pm', 'reminder', 'jan', 'feb', 'march', 'apr', 'may', 'jun', 'jul', 'aug',
-                    'sep', 'oct', 'nov', 'dec', 'spring', 'summer', 'autumn', 'winter', 'moved', 'none'}
+                    'rescheduled', 'am', 'pm', 'reminder', 'jan', 'feb', 'march', 'apr', 'april', 'may', 'jun', 'jul', 'aug',
+                    'sep', 'oct', 'nov', 'dec', 'spring', 'summer', 'autumn', 'winter', 'moved', 'none', 'doherty'}
 
 stop_words = stop_words.union(extra_stop_words)
 
@@ -141,8 +141,8 @@ for path in pathlist:
         filtered_sentence = [w for w in word_tokens if not w in stop_words]
         # filtered_sentence = [ps.stem(word) for word in filtered_sentence]
 
-        results = {'Computer Science': 0, 'Politics': 0, 'Biology': 0, 'Chemistry': 0, 'Physics and Astronomy': 0,
-                   'Languages': 0, 'Education': 0, 'Business': 0, 'Performing Arts': 0, 'Mathematics':0, 'Other':0, 'Engineering': 0}
+        results = {'Computer Science': -0.5, 'Politics': -0.5, 'Biology': -0.5, 'Chemistry': -0.5, 'Physics and Astronomy': -0.5,
+                   'Languages': -0.5, 'Education': -0.5, 'Business': -0.5, 'Performing Arts': -0.5, 'Mathematics':-0.5, 'Other':0, 'Engineering': -0.5}
 
         # print(nltk.pos_tag(filtered_sentence))
         tagged = nltk.pos_tag(filtered_sentence)
@@ -151,6 +151,13 @@ for path in pathlist:
         print(nltk.pos_tag(filtered_sentence))
         for word in filtered_sentence:
             # print('Result for %s: ' % word)
+
+            for k,v in data.items():
+                if word in v:
+                    current_val = results[k]
+                    current_val += 10
+                    results[k] = current_val
+
             resultStream = process(word)
             if resultStream is not None:
 
@@ -158,5 +165,10 @@ for path in pathlist:
                     current_value = results[key]
                     current_value += value
                     results[key] = current_value
-        print(results)
+        print("Results are as follows: ")
+        # top_two = sorted(results, key=results.get, reverse=True)[:3]
+        c = Counter(results)
+        most_likely = c.most_common(3)
+        print([key for key,val in most_likely])
+        # print(max(results, key=results.get))
         print()
