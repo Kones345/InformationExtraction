@@ -59,7 +59,7 @@ data = {
     'Engineering': ['material', 'engineering', 'environment', 'design', '3d', 'aeroacoustics', 'aerothermodynamics',
                     'air', 'turbulence', 'bridge', 'collapse', 'building', 'cad', 'car', 'fiber', 'optics',
                     'geoengineering', 'nano', 'nanotubes', 'stereo', 'tunnel'],
-    'Mathematics': ['anlge', 'measure', 'prove', 'solve', 'problem', 'equation', 'graph', 'plane', 'line', 'axis',
+    'Mathematics': ['angle', 'measure', 'prove', 'solve', 'problem', 'equation', 'graph', 'plane', 'line', 'axis',
                     'algebra',
                     'adjacent', 'coefficient', 'frequency', 'circumference', 'denominator', 'distribution', 'polygon',
                     'expression', 'factorise', 'formula', 'frequency', 'density', 'gradient', 'hcf', 'indices',
@@ -67,6 +67,10 @@ data = {
                     'numerator', 'even', 'odd', 'parallel', 'perpendicular', 'probability', 'product', 'prime',
                     'quadratic', 'remainder', 'rotation', 'rotate', 'sum', 'symmetry', 'tangent', 'volume',
                     'solve', 'square', 'root', 'cube'],
+    'Art': ['art', 'fine', 'color', 'colour', 'paint', 'gallery', 'print', 'pop', 'abstract', 'artist',
+            'wall', 'acrylic', 'sculpture', 'watercolor', 'oil', 'supplies', 'modern', 'artwork', 'famous',
+            'deco', 'pixel', '3d', 'liberal', 'vector', 'clip', 'creative', 'paper', 'nude', 'concept', 'animation'
+            'crafts', 'clay', 'tattoo', 'pencil', 'graphic', 'portfolio', 'decor'],
     'Other': []
 
 }
@@ -76,7 +80,7 @@ categories = {word: key for key, words in data.items() for word in words}
 
 # Load the whole embedding matrix
 embeddings_index = {}
-with open('glove.6B.100d.txt') as f:
+with open('glove.6B.200d.txt') as f:
     for line in f:
         values = line.split()
         word = values[0]
@@ -143,13 +147,13 @@ for path in pathlist:
         word_tokens = word_tokenize(normalized)
         filtered_sentence = [w for w in word_tokens if w not in stop_words]
 
-        results = {'Computer Science': -0.5, 'Politics': -0.5, 'Biology': -0.5, 'Chemistry': -0.5,
-                   'Physics and Astronomy': -0.5,
-                   'Languages': -0.5, 'Education': -0.5, 'Business': -0.5, 'Performing Arts': -0.5, 'Mathematics': -0.5,
-                   'Other': 0, 'Engineering': -0.5}
+        results = {'Computer Science': -2, 'Politics': -2, 'Biology': -2, 'Chemistry': -2,
+                   'Physics and Astronomy': -2,
+                   'Languages': -2, 'Education': -2, 'Business': -2, 'Performing Arts': -2, 'Mathematics': -2,
+                   'Other': 0, 'Engineering': -2, 'Art': -2}
 
         tagged = nltk.pos_tag(filtered_sentence)
-        # filtered_sentence = [key for key, value in tagged if value == 'NN' or value == 'NNS']
+        filtered_sentence = [key for key, value in tagged if value == 'NN' or value == 'NNS']
         print(nltk.pos_tag(filtered_sentence))
 
         for word in filtered_sentence:
