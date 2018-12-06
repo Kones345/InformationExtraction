@@ -7,6 +7,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem.wordnet import WordNetLemmatizer
 from pathlib import Path
 from collections import Counter
+from regex_store import *
 
 data = {
     'Computer Science': ['software', 'object-oriented', 'architecture', 'design', 'product', 'debug', 'breakpoint',
@@ -110,6 +111,21 @@ def process(query):
     return scores
 
 
+def search_body_for_topic(body):
+    res = {'Computer Science': 0, 'Politics': 0, 'Biology': 0, 'Chemistry': 0, 'Physics and Astronomy': 0,
+           'Languages': 0, 'Education': 0, 'Business': 0, 'Performing Arts': 0, 'Mathematics': 0, 'Other': 0,
+           'Engineering': 0, 'Art': 0}
+
+    for k, v in data.items():
+        for word in v:
+            if word in body:
+                score = res[k]
+                score += 1
+                res[k] = score
+    return res
+
+
+
 stop_words = set(stopwords.words('english'))
 extra_stop_words = {'lecture', 'seminar', 'talk', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
                     'saturday', 'sunday', 'telecastseminar', 'today', 'weh', 'adamson', 'wing', 'hall', 'baker',
@@ -177,6 +193,23 @@ for path in pathlist:
 
         print("Results are as follows: ")
         c = Counter(results)
-        most_likely = c.most_common(3)
-        print([key for key, val in most_likely])
-        print()
+
+        top = c.most_common(1)[0]
+
+        if top[0] == 'Other':
+            print("Looking for other: \n")
+            # Splits the text into header and body
+            try:
+                header, body = re.search(header_body_regx_str, content).groups()
+            except:
+                print(p)
+                continue
+            new_res = search_body_for_topic(body)
+            c1 = Counter(new_res)
+            most_likely = c1.most_common(3)
+            print([key for key, val in most_likely])
+        else:
+            most_likely = c.most_common(3)
+            print([key for key, val in most_likely])
+            print()
+

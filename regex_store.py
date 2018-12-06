@@ -6,6 +6,10 @@ timePattern3 = '\d{1,2}:\d{2}'  # dd:dd || d:dd
 timePattern4 = '(' + timePattern3 + am_pm + ')'  # dd:dd AM
 timePattern5 = '(' + timePattern3 + ')' + ' - ' + timePattern4
 timePattern6 = timePattern4 + ' - (' + timePattern3 + ')'
+
+
+
+
 time_regx_str = r'\b([0-9]{1,2}(?::[0-9]{2}\s?(?:AM|PM|am|pm|a\.m|p\.m)|:[0-9]{2}|\s?(?:AM|PM|am|pm|a\.m|p\.m)))\b'
 speaker_regx_str = r'(?:\b(?:Speaker|Name|Who)\b:\s*)(.*?,|.*)'
 # speaker_regx_str = r'(?:\b(?:Speaker|Name|Who)\b:\s*)(.*?|.*)(?:,|-|\/)'

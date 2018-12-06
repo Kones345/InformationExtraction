@@ -104,7 +104,8 @@ class DataExtractor:
         else:
             return locations
 
-    def get_continuous_chunks(self, chunked):
+    @staticmethod
+    def get_continuous_chunks(chunked):
         prev = None
         continuous_chunk = []
         current_chunk = []
