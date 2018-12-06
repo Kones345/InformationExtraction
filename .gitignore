@@ -1,5 +1,6 @@
 /data/training/
 /data/untagged/
+/data/seminar_testdata/
 /data/names/
 /example/
 /stanfordCoreJars/
@@ -12,3 +13,5 @@ __pycache__/regex_store.cpython-37.pyc
 /out/
 glove.6B.100d.txt
 glove.6B.200d.txt
+*.xml
+*.iml
