@@ -45,6 +45,7 @@ class DataExtractor:
                         loc = re.sub(deadTag1, "", loc)
                         loc = re.sub(r'[^\w\s]', '', loc)
                         self.knownLocations.add(loc)
+        print('Training: ✅')
 
     def extractTime(self, text):
 

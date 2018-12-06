@@ -5,14 +5,14 @@ from nltk.tag import DefaultTagger
 from nltk.corpus import brown
 import nltk
 from dateutil import parser as time_parser
-from nltk import ne_chunk, pos_tag, word_tokenize, sent_tokenize
+from nltk import word_tokenize, sent_tokenize
 from nltk.tag import StanfordNERTagger
 from itertools import groupby
 from regex_store import *
 import re
 from Utils import Utils
 import os
-from time import sleep
+from tqdm import tqdm
 
 
 # Class to handle tagging of seminar emails
@@ -114,11 +114,8 @@ class Tagger:
 
         return text
 
-    def tagSeminar(self, path, directory, extractor, noOfFiles):
-        Utils.printProgressBar(0, noOfFiles, prefix='Progress:', suffix='Complete', length=50)
-        i = 0
-        # Extracting files
-        for file in os.listdir(directory):
+    def tagSeminar(self, path, directory, extractor):
+        for file in tqdm(os.listdir(directory)):
             filename = os.fsdecode(file)
             if filename.endswith(".txt"):
                 with open(path + filename, 'r', encoding='utf-8') as f:
@@ -129,7 +126,7 @@ class Tagger:
                     try:
                         header, body = re.search(header_body_regx_str, placeholder).groups()
                     except:
-                        print(filename)
+                        # print(filename)
                         continue
 
                     stime, etime = extractor.extractTime(header)
@@ -149,7 +146,6 @@ class Tagger:
                     out = open(out_location + filename, "w+")
                     out.write(seminar)
                     out.close()
-                    sleep(0.1)
-                    Utils.printProgressBar(i + 1, noOfFiles, prefix='Progress:', suffix='Complete', length=50)
-                    i += 1
+                    # print(filename+' ✅')
                 continue
+        # bar.finish()

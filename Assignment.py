@@ -1,22 +1,19 @@
 import time
 from DataExtractor import DataExtractor
 from Tagger import Tagger
+from Ontology import Ontology
 import os
 
 start_time = time.time()
-
-# For file reading
-
-# Classes to extract and tag seminars
-
 
 # Setting up directory
 mypath = os.getcwd() + '/data/untagged/'
 trainingPath = 'data/training'
 directory = os.fsencode(mypath)
 
-# Counts the number of files in the working directory
-totalFiles = sum(len(files) for _, _, files in os.walk(mypath))
+print('Running Ontology Classification: \n')
+ontology = Ontology()
+ontology.run(mypath)
 
 print("\nTagging progress beginning. Get a brew, it'll take a while... \n\n")
 
@@ -27,7 +24,7 @@ extractor.train(trainingPath)
 tagger = Tagger()
 
 # Tags all emails in the directory given
-tagger.tagSeminar(mypath, directory, extractor, totalFiles)
+tagger.tagSeminar(mypath, directory, extractor)
 
 # Calculates how long the program took
 seconds = time.time() - start_time
