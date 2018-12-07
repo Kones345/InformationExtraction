@@ -46,7 +46,8 @@ class DataExtractor:
                         self.knownLocations.add(loc)
         print('Training: ✅')
 
-    def extractTime(self, text):
+    @staticmethod
+    def extractTime(text):
 
         time1 = re.compile(timePattern1)
         time2 = re.compile(timePattern2)

@@ -25,7 +25,7 @@ class Tagger:
             '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/classifiers/english.all.3class.distsim.crf.ser.gz',
             '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/stanford-ner.jar',
             encoding='utf-8')
-        if os.path.exists('out/'):
+        if os.path.exists("out/"):
             shutil.rmtree('out/')
 
     train_sents = brown.tagged_sents()[:48000]
@@ -59,10 +59,12 @@ class Tagger:
                 # print( " ".join(w for w, t in chunk))
         return set(results)
 
-    def split_on_tags(self, text, tag):
+    @staticmethod
+    def split_on_tags(text, tag):
         return re.split(r'</?{}>'.format(tag), text)
 
-    def tag_paragraphs(self, text):
+    @staticmethod
+    def tag_paragraphs(text):
         text = '\n\n{}\n\n'.format(text.strip('\n'))
         para = re.compile(paragraphRegex)
         for match in para.finditer(text):
@@ -85,7 +87,8 @@ class Tagger:
 
         return text
 
-    def tagTimes(self, stime, etime, text):
+    @staticmethod
+    def tagTimes(stime, etime, text):
 
         if not etime and not stime:
             return text
@@ -102,18 +105,22 @@ class Tagger:
                     textHolder = textHolder.replace(time_str, '<etime>{}</etime>'.format(time_str))
         return textHolder
 
-    def tag_locations(self, locations, text):
+    @staticmethod
+    def tag_locations(locations, text):
         for loc in locations:
             insensitive_loc = re.compile(r'({})'.format(re.escape(loc)), re.IGNORECASE)
             text = re.sub(insensitive_loc, '<location>' + loc + '</location>', text)
 
         return text
 
-    def tag_speakers(self, text, speakers):
+    @staticmethod
+    def tag_speakers(text, speakers):
 
         for spk in speakers:
 
-            insensitive_spk = re.compile(r'(\b({})\b|[.?!]({})\b|\(({})\))'.format(re.escape(spk), re.escape(spk), re.escape(spk), re.escape(spk)), re.IGNORECASE)
+            insensitive_spk = re.compile(r'(\b({})\b|[.?!]({})\b|\(({})\))'.format(re.escape(spk), re.escape(spk),
+                                                                                   re.escape(spk), re.escape(spk)),
+                                         re.IGNORECASE)
             try:
                 name = re.search(insensitive_spk, text).group(1)
                 clean = name.strip()

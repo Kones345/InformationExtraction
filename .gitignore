@@ -15,3 +15,4 @@ glove.6B.100d.txt
 glove.6B.200d.txt
 *.xml
 *.iml
+ontology_results.txt
