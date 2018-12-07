@@ -1,7 +1,7 @@
 # TIME PATTERNS
-timePattern1 = '(\d{1,2}:\d{2}) - (\d{1,2}:\d{2})'  # dd:dd - dd:dd
-am_pm = '(AM|PM|am|pm|A\.M\.|P\.M\.|a\.m\.|p\.m\.| AM| PM| am| pm| A\.M\.| P\.M\.| a\.m\.| p\.m\.)'
-timePattern2 = "(\d{1,2}:\d{2}" + am_pm + ') - (\d{1,2}:\d{2}' + am_pm + ')'  # dd:dd am - dd:dd am
+timePattern1 = r'(\d{1,2}:\d{2}) - (\d{1,2}:\d{2})'  # dd:dd - dd:dd
+am_pm = r'(AM|PM|am|pm|A\.M\.|P\.M\.|a\.m\.|p\.m\.| AM| PM| am| pm| A\.M\.| P\.M\.| a\.m\.| p\.m\.)'
+timePattern2 = r'(\d{1,2}:\d{2}' + am_pm + ') - (\d{1,2}:\d{2}' + am_pm + ')'  # dd:dd am - dd:dd am
 timePattern3 = '\d{1,2}:\d{2}'  # dd:dd || d:dd
 timePattern4 = '(' + timePattern3 + am_pm + ')'  # dd:dd AM
 timePattern5 = '(' + timePattern3 + ')' + ' - ' + timePattern4
@@ -12,7 +12,7 @@ speaker_regx_str = r'(?:\b(?:Speaker|Name|Who|SPEAKER|NAME|WHO|SPREAKER)\b:\s*)(
 # speaker_regx_str = r'(?:\b(?:Speaker|Name|Who)\b:\s*)(.*?|.*)(?:,|-|\/)'
 header_body_regx_str = r'([\s\S]+(?:\b.+\b:.+\n\n|\bAbstract\b:))([\s\S]*)'
 knownLocationRegxStr = '<location>(.+)<\/location>'
-knownSpeakersRegxStr = '<speaker>(?:Dr|Mr|Ms|Mrs|Prof|Sir|Professor)?\.?\s?([a-zA-Z ]+),?\s?(?:PhD)?<\/speaker>'
+knownSpeakersRegxStr = r'<speaker>(?:Dr|Mr|Ms|Mrs|Prof|Sir|Professor)?\.?\s?([a-zA-Z ]+),?\s?(?:PhD)?<\/speaker>'
 deadTag = '<\/sentence>'
 deadTag1 = '<\/paragraph>'
 
@@ -26,3 +26,9 @@ not_sentence_regx_str = r'^[A-Za-z0-9](?:.|\n)+(?:\.|\?|!|:)$'
 
 topic_regx_str = r'(?:\b(?:Topic)\b:\s*)(.*)'
 special_char_regx_str = r'([^a-zA-Z ]+?)'
+
+stime_regex_str = '<stime>(.*)</stime>'
+etime_regex_str = '<etime>(.*)</etime>'
+sent_regex_str = r'<sentence>((?:.|\s)+?)<\/sentence>'
+para_regex_str = r'<paragraph>((?:.|\s)+?)<\/paragraph>'
+# sent_regex_str = r'<sentence>[\t]*((?:.|\s)+?)[\t]*<\/sentence>'

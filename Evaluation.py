@@ -1,7 +1,6 @@
 import re
 from regex_store import *
 
-
 class Evaluation:
 
     def extractTestData(self, filename):
@@ -9,13 +8,20 @@ class Evaluation:
         file = open(test_file_path + filename, 'r')
         contents = file.read()
         speaker_regex = re.compile(knownSpeakersRegxStr)
-        speakers = set(speaker_regex.findall(contents))
+        speakers = speaker_regex.findall(contents)
         location_regex = re.compile(knownLocationRegxStr)
-        locations = set(re.findall(location_regex, contents))
-        print(speakers)
-        print(locations)
-
+        locations = re.findall(location_regex, contents)
+        stimes = re.findall(stime_regex_str, contents)
+        etimes = re.findall(etime_regex_str, contents)
+        sents = re.findall(sent_regex_str, contents)
+        paras = re.findall(para_regex_str, contents)
+        # print(speakers)
+        # print(locations)
+        # print(stimes)
+        # print(etimes)
+        # print(sents)
+        # print(paras)
 
 if __name__ == '__main__':
     eval = Evaluation()
-    eval.extractTestData('301.txt')
+    eval.extractTestData('400.txt')
