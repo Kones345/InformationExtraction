@@ -110,6 +110,15 @@ class Ontology:
 
     }
 
+    extra_stop_words = {'lecture', 'seminar', 'talk', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+                        'saturday', 'sunday', 'telecastseminar', 'today', 'weh', 'adamson', 'wing', 'hall', 'baker',
+                        'rescheduled', 'am', 'pm', 'reminder', 'jan', 'feb', 'march', 'apr', 'april', 'may', 'jun',
+                        'jul',
+                        'aug', 'sep', 'oct', 'nov', 'dec', 'spring', 'summer', 'autumn', 'winter', 'moved', 'none',
+                        'doherty', 'january', 'february', 'march', 'may', 'june', 'july', 'august', 'september',
+                        'october'
+                        'december'}
+
     # Processing the query
     def process(self, query):
         scores = {}
@@ -145,19 +154,8 @@ class Ontology:
     def run(self, directory):
 
         stop_words = set(stopwords.words('english'))
-        extra_stop_words = {'lecture', 'seminar', 'talk', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
-                            'saturday', 'sunday', 'telecastseminar', 'today', 'weh', 'adamson', 'wing', 'hall', 'baker',
-                            'rescheduled', 'am', 'pm', 'reminder', 'jan', 'feb', 'march', 'apr', 'april', 'may', 'jun',
-                            'jul',
-                            'aug', 'sep', 'oct', 'nov', 'dec', 'spring', 'summer', 'autumn', 'winter', 'moved', 'none',
-                            'doherty', 'january', 'february', 'march', 'may', 'june', 'july', 'august', 'september',
-                            'october'
-                            'december'}
 
-        stop_words = stop_words.union(extra_stop_words)
-
-        topic_regx_str = r'(?:\b(?:Topic)\b:\s*)(.*)'
-        special_char_regx_str = r'([^a-zA-Z ]+?)'
+        stop_words = stop_words.union(self.extra_stop_words)
 
         lemma = WordNetLemmatizer()
         topicRegex = re.compile(topic_regx_str)
@@ -190,7 +188,6 @@ class Ontology:
 
                 tagged = nltk.pos_tag(filtered_sentence)
                 filtered_sentence = [key for key, value in tagged if value == 'NN' or value == 'NNS']
-                # print(nltk.pos_tag(filtered_sentence))
 
                 for word in filtered_sentence:
                     # print('Result for %s: ' % word)

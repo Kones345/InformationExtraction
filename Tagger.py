@@ -18,7 +18,6 @@ from tqdm import tqdm
 # Class to handle tagging of seminar emails
 class Tagger:
 
-    # backoff
     def __init__(self):
         self.backoff = self.backoff_tagger(backoff=DefaultTagger('NN'))
         self.st = StanfordNERTagger(
@@ -93,11 +92,11 @@ class Tagger:
         for time_str in set(time_regx.findall(textHolder)):
             time = time_parser.parse(time_str).time()
             if time_parser.parse(stime).time() == time:
-                textHolder = re.sub(time_str, '<stime>{}</stime>'.format(stime), textHolder)
+                textHolder = textHolder.replace(time_str, '<stime>{}</stime>'.format(time_str))
 
             elif etime:
                 if time_parser.parse(etime).time() == time:
-                    textHolder = re.sub(time_str, '<etime>{}</etime>'.format(etime), textHolder)
+                    textHolder = textHolder.replace(time_str, '<etime>{}</etime>'.format(time_str))
         return textHolder
 
     def tag_locations(self, locations, text):
@@ -108,8 +107,11 @@ class Tagger:
         return text
 
     def tag_speakers(self, text, speakers):
+
         for spk in speakers:
-            insensitive_spk = re.compile(r'({})'.format(re.escape(spk)))
+            # if spk == 'ross':
+            #     print('FOUND ROSS')
+            insensitive_spk = re.compile(r'(\s({})\s|[.?!]({})\s|\s({})[?.!,:-]|\(({})\))'.format(re.escape(spk), re.escape(spk), re.escape(spk), re.escape(spk)))
             text = re.sub(insensitive_spk, r'<speaker>\1</speaker>', text)
 
         return text
@@ -119,14 +121,12 @@ class Tagger:
             filename = os.fsdecode(file)
             if filename.endswith(".txt"):
                 with open(path + filename, 'r', encoding='utf-8') as f:
-                    # Read in email
                     placeholder = f.read()
 
                     # Splits the text into header and body
                     try:
                         header, body = re.search(header_body_regx_str, placeholder).groups()
                     except:
-                        # print(filename)
                         continue
 
                     stime, etime = extractor.extractTime(header)
@@ -146,6 +146,5 @@ class Tagger:
                     out = open(out_location + filename, "w+")
                     out.write(seminar)
                     out.close()
-                    # print(filename+' ✅')
+                    # print(filename)
                 continue
-        # bar.finish()

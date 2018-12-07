@@ -15,8 +15,7 @@ print('Running Ontology Classification: \n')
 ontology = Ontology()
 ontology.run(mypath)
 
-print("\nTagging progress beginning. Get a brew, it'll take a while... \n\n")
-
+print("\nTagging progress beginning. Get a brew, it'll take a while... \n")
 extractor = DataExtractor()
 
 # Trains our model

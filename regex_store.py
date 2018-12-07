@@ -26,3 +26,7 @@ pos_tags_regx_str = r'{\*.+?\*}'
 # paragraphRegex = r'(?s)((?:[^\n][\n]?)+)'
 paragraphRegex = r'(?<=\n\n)(?:(?:\s*\b.+\b:(?:.|\s)+?)|(\s{0,4}[A-Za-z0-9](?:.|\n)+?\s*))(?=\n\n)'
 not_sentence_regx_str = r'^[A-Za-z0-9](?:.|\n)+(?:\.|\?|!|:)$'
+
+
+topic_regx_str = r'(?:\b(?:Topic)\b:\s*)(.*)'
+special_char_regx_str = r'([^a-zA-Z ]+?)'
