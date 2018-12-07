@@ -106,6 +106,16 @@ class Ontology:
                 'deco', 'pixel', '3d', 'liberal', 'vector', 'clip', 'creative', 'paper', 'nude', 'concept', 'animation'
                                                                                                             'crafts',
                 'clay', 'tattoo', 'pencil', 'graphic', 'portfolio', 'decor'],
+        'Medicine': ['surgery', 'diagnosis', 'doctor', 'nurse', 'heart', 'brain', 'medicine', 'hospital', 'gp', 'clinic'
+                     'diagnose', 'pills', 'drugs', 'healthcare', 'coma', 'camcer', 'treatment', 'baby', 'steroids',
+                     'x-ray', 'radiotheraphy', 'chemo', 'chemotherapy', 'radiation'],
+        'Philosophy and Religion': ['theology', 'theological', 'religion', 'philosophy', 'jesus', 'christian',
+                                    'christianity', 'bible', 'islam', 'allah', 'quran', 'mohamed', 'ramadan', 'eid',
+                                    'buddha', 'hindu', 'hinduism', 'moral', 'morality', 'faith', 'atheist',
+                                    'agnostic', 'sunni', 'shia', 'jew', 'judaism', 'torah', 'sabbath', 'holy',
+                                    'sacred', 'spirit', 'pray', 'worship', 'church', 'pope', 'roman', 'catholic',
+                                    'protestant', 'agnostic', 'saint', 'blessed', 'mosque', 'temple', 'ganesh',
+                                    'god', 'plato', 'socrates', 'aristotle'],
         'Other': []
 
     }
@@ -141,7 +151,7 @@ class Ontology:
     def search_body_for_topic(self, body):
         res = {'Computer Science': 0, 'Politics': 0, 'Biology': 0, 'Chemistry': 0, 'Physics and Astronomy': 0,
                'Languages': 0, 'Education': 0, 'Business': 0, 'Performing Arts': 0, 'Mathematics': 0, 'Other': 0,
-               'Engineering': 0, 'Art': 0}
+               'Engineering': 0, 'Art': 0, 'Medicine': 0, 'Philsophy and Religion': 0}
 
         for k, v in self.data.items():
             for word in v:
@@ -184,7 +194,7 @@ class Ontology:
                 results = {'Computer Science': -2, 'Politics': -2, 'Biology': -2, 'Chemistry': -2,
                            'Physics and Astronomy': -2,
                            'Languages': -2, 'Education': -2, 'Business': -2, 'Performing Arts': -2, 'Mathematics': -2,
-                           'Other': 0, 'Engineering': -2, 'Art': -2}
+                           'Other': 0, 'Engineering': -2, 'Art': -2, 'Medicine': -2, 'Philosophy and Religion': -2}
 
                 tagged = nltk.pos_tag(filtered_sentence)
                 filtered_sentence = [key for key, value in tagged if value == 'NN' or value == 'NNS']
