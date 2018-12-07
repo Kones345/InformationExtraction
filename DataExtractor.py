@@ -21,13 +21,12 @@ class DataExtractor:
     def __init__(self):
         self.sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
 
-    def train(self, path):
+    def train(self, directory):
         knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
 
         re.compile(deadTag)
         re.compile(deadTag1)
-        trainingPath = 'data/training'
-        pathlist = Path(trainingPath).glob('**/*.txt')
+        pathlist = Path(directory).glob('**/*.txt')
         for path in pathlist:
             p = str(path)
             with open(p, 'r', encoding='utf-8') as f:
@@ -101,6 +100,12 @@ class DataExtractor:
                     locations.add(x)
 
         if len(locations) == 0:
+            for loc in self.knownLocations:
+                if loc in body:
+                    locations.add(loc)
+
+        if len(locations) == 0:
+            self.knownLocations = self.knownLocations.union(locationList)
             return set(locationList)
         else:
             return locations
@@ -159,5 +164,7 @@ class DataExtractor:
         if len(speakerList) == 0:
             joined = ' '.join(body.split())
             speakerList = tagger.nerStanford(joined, "PERSON")
+
+        self.knownSpeakers = self.knownSpeakers.union(self.cleanSpeakerList(speakerList))
 
         return self.cleanSpeakerList(speakerList)

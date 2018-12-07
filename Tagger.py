@@ -13,6 +13,7 @@ import re
 from Utils import Utils
 import os
 from tqdm import tqdm
+import shutil
 
 
 # Class to handle tagging of seminar emails
@@ -24,6 +25,8 @@ class Tagger:
             '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/classifiers/english.all.3class.distsim.crf.ser.gz',
             '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/stanford-ner.jar',
             encoding='utf-8')
+        if os.path.exists('out/'):
+            shutil.rmtree('out/')
 
     train_sents = brown.tagged_sents()[:48000]
 
@@ -102,17 +105,21 @@ class Tagger:
     def tag_locations(self, locations, text):
         for loc in locations:
             insensitive_loc = re.compile(r'({})'.format(re.escape(loc)), re.IGNORECASE)
-            text = re.sub(insensitive_loc, '<location> ' + loc + '</location>', text)
+            text = re.sub(insensitive_loc, '<location>' + loc + '</location>', text)
 
         return text
 
     def tag_speakers(self, text, speakers):
 
         for spk in speakers:
-            # if spk == 'ross':
-            #     print('FOUND ROSS')
-            insensitive_spk = re.compile(r'(\s({})\s|[.?!]({})\s|\s({})[?.!,:-]|\(({})\))'.format(re.escape(spk), re.escape(spk), re.escape(spk), re.escape(spk)))
-            text = re.sub(insensitive_spk, r'<speaker>\1</speaker>', text)
+
+            insensitive_spk = re.compile(r'(\b({})\b|[.?!]({})\b|\(({})\))'.format(re.escape(spk), re.escape(spk), re.escape(spk), re.escape(spk)), re.IGNORECASE)
+            try:
+                name = re.search(insensitive_spk, text).group(1)
+                clean = name.strip()
+                text = text.replace(name, '<speaker>' + clean + '</speaker>')
+            except:
+                continue
 
         return text
 
