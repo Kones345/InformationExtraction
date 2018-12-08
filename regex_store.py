@@ -31,4 +31,6 @@ stime_regex_str = '<stime>(.*)</stime>'
 etime_regex_str = '<etime>(.*)</etime>'
 sent_regex_str = r'<sentence>((?:.|\s)+?)<\/sentence>'
 para_regex_str = r'<paragraph>((?:.|\s)+?)<\/paragraph>'
+speaker_regex_str = r'<speaker>((?:.|\s)+?)<\/speaker>'
+
 # sent_regex_str = r'<sentence>[\t]*((?:.|\s)+?)[\t]*<\/sentence>'
