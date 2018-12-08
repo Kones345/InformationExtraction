@@ -31,7 +31,7 @@ class Ontology:
         # print('Loaded %s word vectors.' % len(self.embeddings_index))
         self.setup()
 
-    # Fills the categories and data embedidngs dictionaries
+    # Fills the categories and data embeddings dictionaries
     def setup(self):
         # Words -> category, makes a dictionary of keyword; category pairs
         self.categories = {word: key for key, words in self.data.items() for word in words}
