@@ -46,6 +46,7 @@ class DataExtractor:
                         self.knownLocations.add(loc)
         print('Training: ✅')
 
+    # TODO: Handle cases where the formst of time is 'from/until x'
     @staticmethod
     def extractTime(text):
 

@@ -117,6 +117,7 @@ class Evaluation:
 
             except:
                 continue
+
     def process_sents_tps(self, actual, output):
         self.sentence_classified += len(output)
         self.sentence_true_count += len(actual)
@@ -141,11 +142,17 @@ class Evaluation:
             except:
                 continue
 
-    def calc_precision(self, tps, classified):
+    @staticmethod
+    def calc_precision(tps, classified):
         return tps/classified
 
-    def calc_recall(self, tps, actual_tp_count):
+    @staticmethod
+    def calc_recall(tps, actual_tp_count):
         return tps/actual_tp_count
+
+    @staticmethod
+    def calc_f_measure(precision, recall):
+        return ((precision * recall)/(precision + recall))*2
 
     def run(self):
         directory = os.fsencode('/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/seminar_testdata/test_tagged/')
@@ -153,7 +160,6 @@ class Evaluation:
             try:
                 filename = os.fsdecode(file)
                 if filename.endswith(".txt"):
-                    # print(filename)
                     actual_speakers, actual_locations, actual_stimes, actual_etimes, actual_sents, actual_paras = self.extractTestData(
                         filename)
                     out_speakers, out_locations, out_stimes, out_etimes, out_sents, out_paras = self.extractOutData(
@@ -173,16 +179,21 @@ class Evaluation:
 
         stime_precision = self.calc_precision(self.stime_tp, self.stime_classified)
         stime_recall = self.calc_recall(self.stime_tp, self.stime_true_count)
+        stime_f = self.calc_f_measure(stime_precision, stime_recall)
 
         etime_precision = self.calc_precision(self.etime_tp, self.etime_classified)
         etime_recall = self.calc_recall(self.etime_tp, self.etime_true_count)
+        etime_f = self.calc_f_measure(etime_precision, etime_recall)
 
         location_precision = self.calc_precision(self.loc_tp, self.loc_classified)
         location_recall =  self.calc_recall(self.loc_tp, self.loc_true_count)
+        location_f = self.calc_f_measure(location_precision, location_recall)
 
 
         speaker_precision = self.calc_precision(self.speaker_tp, self.speaker_classified)
         speaker_recall = self.calc_recall(self.speaker_tp, self.speaker_true_count)
+        speaker_f = self.calc_f_measure(speaker_precision, speaker_recall)
+
 
 
         sent_precision = self.calc_precision(self.sentence_tp, self.sentence_classified)
@@ -190,28 +201,20 @@ class Evaluation:
 
         print('stime precision is: {}'.format(stime_precision))
         print('stime recall is: {}'.format(stime_recall))
+        print('stime f measure is: {}\n'.format(stime_f))
         print('etime precision is: {}'.format(etime_precision))
         print('etime recall is: {}'.format(etime_recall))
+        print('etime f measure is: {}\n'.format(etime_f))
         print('location precison is: {}'.format(location_precision))
         print('location recall is: {}'.format(location_recall))
-
+        print('location f measure is: {}\n'.format(location_f))
         print('speaker precision is: {}'.format(speaker_precision))
         print('speaker recall is: {}'.format(speaker_recall))
+        print('speaker f measure is: {}'.format(speaker_f))
         # print(sent_precision)
         # print(para_precision)
 
-        # print(self.etime_tp)
-
 if __name__ == '__main__':
     eval = Evaluation()
-    # aspeakers, alocations, astimes, aetimes, asents, aparas = eval.extractTestData('401.txt')
-    # speakers, locations, stimes, etimes, sents, paras = eval.extractOutData('401.txt')
-    #
-    # print(sents)
-    # print(asents)
-    # eval.process_sents_tps(asents, sents)
-    # print(eval.calc_precision(eval.sentence_tp, eval.sentence_classified))
-
-    # eval.extractOutData('401.txt')
 
     eval.run()
