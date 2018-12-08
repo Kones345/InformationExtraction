@@ -1,6 +1,7 @@
 import re
 from regex_store import *
 import os
+from tabulate import tabulate
 
 class Evaluation:
 
@@ -181,40 +182,31 @@ class Evaluation:
         stime_recall = self.calc_recall(self.stime_tp, self.stime_true_count)
         stime_f = self.calc_f_measure(stime_precision, stime_recall)
 
+        stime_row = ['stime', stime_precision, stime_recall, stime_f]
+
         etime_precision = self.calc_precision(self.etime_tp, self.etime_classified)
         etime_recall = self.calc_recall(self.etime_tp, self.etime_true_count)
         etime_f = self.calc_f_measure(etime_precision, etime_recall)
+        etime_row = ['etime', etime_precision, etime_recall, etime_f]
 
         location_precision = self.calc_precision(self.loc_tp, self.loc_classified)
         location_recall =  self.calc_recall(self.loc_tp, self.loc_true_count)
         location_f = self.calc_f_measure(location_precision, location_recall)
+        loc_row = ['location', location_precision, location_recall, location_f]
 
 
         speaker_precision = self.calc_precision(self.speaker_tp, self.speaker_classified)
         speaker_recall = self.calc_recall(self.speaker_tp, self.speaker_true_count)
         speaker_f = self.calc_f_measure(speaker_precision, speaker_recall)
+        speaker_row = ['speaker', speaker_precision, speaker_recall, speaker_f]
 
 
 
         sent_precision = self.calc_precision(self.sentence_tp, self.sentence_classified)
         para_precision = self.calc_precision(self.paragraph_tp, self.paragraph_classified)
 
-        print('stime precision is: {}'.format(stime_precision))
-        print('stime recall is: {}'.format(stime_recall))
-        print('stime f measure is: {}\n'.format(stime_f))
-        print('etime precision is: {}'.format(etime_precision))
-        print('etime recall is: {}'.format(etime_recall))
-        print('etime f measure is: {}\n'.format(etime_f))
-        print('location precison is: {}'.format(location_precision))
-        print('location recall is: {}'.format(location_recall))
-        print('location f measure is: {}\n'.format(location_f))
-        print('speaker precision is: {}'.format(speaker_precision))
-        print('speaker recall is: {}'.format(speaker_recall))
-        print('speaker f measure is: {}'.format(speaker_f))
-        # print(sent_precision)
-        # print(para_precision)
+        print(tabulate([stime_row, etime_row, loc_row, speaker_row], headers=['Tag', 'Precision', 'Recall', 'F Measure']))
 
 if __name__ == '__main__':
     eval = Evaluation()
-
     eval.run()
