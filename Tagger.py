@@ -6,7 +6,6 @@ from nltk.tag import BigramTagger
 from nltk.tag import TrigramTagger
 from nltk.tag import DefaultTagger
 from nltk.corpus import brown
-import nltk
 from dateutil import parser as time_parser
 from nltk import word_tokenize, sent_tokenize
 from nltk.tag import StanfordNERTagger
@@ -59,15 +58,6 @@ class Tagger:
                 results.append(" ".join(w for w, t in chunk))
         return set(results)
 
-    @staticmethod
-    def split_on_tags(text, tag):
-        """
-        Splits text on a given tag
-        :param text: tagged text
-        :param tag: tag to split on
-        :return: split text
-        """
-        return re.split(r'</?{}>'.format(tag), text)
 
     @staticmethod
     def tag_paragraphs(text):
@@ -91,7 +81,8 @@ class Tagger:
         :param text: text to be tagged
         :return: tagged text
         """
-        text_parts = self.split_on_tags(text, 'paragraph')
+        # text_parts = self.split_on_tags(text, 'paragraph')
+        text_parts = re.split(r'</?{}>'.format('paragraph'), text)
         sentences = []
         for part in text_parts:
             p = part.strip()
