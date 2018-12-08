@@ -142,8 +142,11 @@ class Evaluation:
 
         for i in range(0, len(output)):
             try:
-                if output[i] == actual[i]:
-                    self.sentence_tp += 1
+                # if output[i] == actual[i]:
+                #     self.sentence_tp += 1
+                for j in range(0, len(actual)):
+                    if output[i] == actual[j]:
+                        self.sentence_tp +=1
 
             except:
                 continue
@@ -154,9 +157,11 @@ class Evaluation:
 
         for i in range(0, len(output)):
             try:
-                if output[i] == actual[i]:
-                    self.paragraph += 1
-
+                # if output[i] == actual[i]:
+                #     self.paragraph += 1
+                for j in range(0, len(actual)):
+                    if output[i] == actual[j]:
+                        self.paragraph_tp +=1
             except:
                 continue
 
@@ -223,8 +228,8 @@ class Evaluation:
 
         para_precision = self.calc_precision(self.paragraph_tp, self.paragraph_classified)
         para_recall = self.calc_recall(self.paragraph_tp, self.paragraph_true_count)
-        # para_f = self.calc_f_measure(para_precision, para_recall)
-        para_row = ['paragraph', para_precision, para_recall]
+        para_f = self.calc_f_measure(para_precision, para_recall)
+        para_row = ['paragraph', para_precision, para_recall, para_f]
 
         print(tabulate([stime_row, etime_row, loc_row, speaker_row, sent_row, para_row], headers=['Tag', 'Precision', 'Recall', 'F Measure']))
 
