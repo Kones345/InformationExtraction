@@ -25,7 +25,8 @@ class Tagger:
     def __init__(self):
         self.backoff = self.backoff_tagger(backoff=DefaultTagger('NN'))
         self.st = StanfordNERTagger(
-            '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/classifiers/english.all.3class.distsim.crf.ser.gz',
+            '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/classifiers/english.all'
+            '.3class.distsim.crf.ser.gz',
             '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/stanford-ner.jar',
             encoding='utf-8')
         if os.path.exists("out/"):
@@ -93,11 +94,20 @@ class Tagger:
         text_parts = self.split_on_tags(text, 'paragraph')
         sentences = []
         for part in text_parts:
-            sentences.extend(sent_tokenize(part.strip()))
+            p = part.strip()
+            s = sent_tokenize(p)
+            sentences.extend(s)
+            # sentences.extend(sent_tokenize(part.strip()))
 
         # filter everything that is not a proper sentence
-        sentences = list(filter(lambda s: re.match(not_sentence_regx_str, s), sentences))
+        temp = []
         for sent in sentences:
+            res = re.match(not_sentence_regx_str, sent)
+            if res is not None:
+                temp.append(sent)
+
+        # sentences = list(filter(lambda s: re.match(not_sentence_regx_str, s), sentences))
+        for sent in temp:
             text = text.replace(sent, '<sentence>{}</sentence>'.format(sent))
 
         return text
@@ -135,8 +145,8 @@ class Tagger:
         :return: the text with locations tagged
         """
         for loc in locations:
-            insensitive_loc = re.compile(r'({})'.format(re.escape(loc)), re.IGNORECASE)
-            text = re.sub(insensitive_loc, '<location>' + loc + '</location>', text)
+            compiled = re.compile(re.escape(loc), flags=re.IGNORECASE)
+            text = re.sub(compiled, '<location>' + loc + '</location>', text)
 
         return text
 
@@ -158,7 +168,7 @@ class Tagger:
                 clean = name.strip()
                 text = text.replace(name, '<speaker>' + clean + '</speaker>')
             except:
-                continue
+                pass
 
         return text
 

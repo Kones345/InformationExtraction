@@ -40,7 +40,7 @@ class Ontology:
         self.data_embeddings = {key: value for key, value in self.embeddings_index.items() if
                                 key in self.categories.keys()}
 
-    #Stores all the keywords for different topica in the ontology
+    # Stores all the keywords for different topica in the ontology
     data = {
         'Computer Science': ['software', 'object-oriented', 'architecture', 'design', 'product', 'debug', 'breakpoint',
                              'planning', 'a*', 'd*', 'development', 'quality', 'tests', 'artificial', 'intelligence',
