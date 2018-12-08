@@ -1,3 +1,6 @@
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 import re
 import numpy as np
 import nltk

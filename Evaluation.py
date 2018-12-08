@@ -1,7 +1,11 @@
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 import re
 from regex_store import *
 import os
 from tabulate import tabulate
+
 
 class Evaluation:
 
@@ -41,7 +45,13 @@ class Evaluation:
         stimes = re.findall(stime_regex_str, contents)
         etimes = re.findall(etime_regex_str, contents)
         sents = re.findall(sent_regex_str, contents)
+        sents = [s.replace('.', '') for s in sents]
+        sents = [s.replace(' ', '') for s in sents]
+        sents = [re.sub('<\/?[a-z]+?>', '', s) for s in sents]
         paras = re.findall(para_regex_str, contents)
+        paras = [re.sub('<\/?[a-z]+?>', '', p) for p in paras]
+        paras = [p.replace(' ', '') for p in paras]
+
         # print(speakers)
         # print(locations)
         # print(stimes)
@@ -61,7 +71,14 @@ class Evaluation:
         stimes = re.findall(stime_regex_str, contents)
         etimes = re.findall(etime_regex_str, contents)
         sents = re.findall(sent_regex_str, contents)
+        sents = [s.replace('.', '') for s in sents]
+        sents = [s.replace(' ', '') for s in sents]
+        sents = [re.sub('<\/?[a-z]+?>', '', s) for s in sents]
+
         paras = re.findall(para_regex_str, contents)
+        paras = [p.replace(' ', '') for p in paras]
+        paras = [re.sub('<\/?[a-z]+?>', '', p) for p in paras]
+
         # print(speakers)
         # print(locations)
         # print(stimes)
@@ -194,19 +211,25 @@ class Evaluation:
         location_f = self.calc_f_measure(location_precision, location_recall)
         loc_row = ['location', location_precision, location_recall, location_f]
 
-
         speaker_precision = self.calc_precision(self.speaker_tp, self.speaker_classified)
         speaker_recall = self.calc_recall(self.speaker_tp, self.speaker_true_count)
         speaker_f = self.calc_f_measure(speaker_precision, speaker_recall)
         speaker_row = ['speaker', speaker_precision, speaker_recall, speaker_f]
 
-
-
         sent_precision = self.calc_precision(self.sentence_tp, self.sentence_classified)
-        para_precision = self.calc_precision(self.paragraph_tp, self.paragraph_classified)
+        sent_recall = self.calc_recall(self.sentence_tp, self.sentence_true_count)
+        sent_f = self.calc_f_measure(sent_precision, sent_recall)
+        sent_row = ['sentence', sent_precision, sent_recall, sent_f]
 
-        print(tabulate([stime_row, etime_row, loc_row, speaker_row], headers=['Tag', 'Precision', 'Recall', 'F Measure']))
+        para_precision = self.calc_precision(self.paragraph_tp, self.paragraph_classified)
+        para_recall = self.calc_recall(self.paragraph_tp, self.paragraph_true_count)
+        # para_f = self.calc_f_measure(para_precision, para_recall)
+        para_row = ['paragraph', para_precision, para_recall]
+
+        print(tabulate([stime_row, etime_row, loc_row, speaker_row, sent_row, para_row], headers=['Tag', 'Precision', 'Recall', 'F Measure']))
 
 if __name__ == '__main__':
     eval = Evaluation()
+    # eval.extractOutData('301.txt')
+    # eval.extractTestData('301.txt')
     eval.run()

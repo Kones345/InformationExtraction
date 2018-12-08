@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 from nltk.tag import UnigramTagger
 from nltk.tag import BigramTagger
 from nltk.tag import TrigramTagger
@@ -135,13 +138,15 @@ class Tagger:
             filename = os.fsdecode(file)
             if filename.endswith(".txt"):
                 with open(path + filename, 'r', encoding='utf-8') as f:
-                    placeholder = f.read()
+                    placeholder = f.read().strip('\n -*')
 
                     # Splits the text into header and body
                     try:
                         header, body = re.search(header_body_regx_str, placeholder).groups()
                     except:
                         continue
+
+                    header = header.rstrip('\n')
 
                     stime, etime = extractor.extractTime(header)
                     locations = extractor.extractLocation(header, body, self)

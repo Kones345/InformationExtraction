@@ -20,17 +20,14 @@ location_regx_str = r'(?:\b(?:Place|Location|Where)\b:\s*)(.*)'
 pos_location_regx_str = r'((?:(?:(?:\w*?{\*(?:NNP|CD)\*})|(?:room{\*.+?\*}))\s*)*)'
 pos_tags_regx_str = r'{\*.+?\*}'
 
-# paragraphRegex = r'(?s)((?:[^\n][\n]?)+)'
 paragraphRegex = r'(?<=\n\n)(?:(?:\s*\b.+\b:(?:.|\s)+?)|(\s{0,4}[A-Za-z0-9](?:.|\n)+?\s*))(?=\n\n)'
 not_sentence_regx_str = r'^[A-Za-z0-9](?:.|\n)+(?:\.|\?|!|:)$'
 
 topic_regx_str = r'(?:\b(?:Topic)\b:\s*)(.*)'
 special_char_regx_str = r'([^a-zA-Z ]+?)'
 
-stime_regex_str = '<stime>(.*)</stime>'
-etime_regex_str = '<etime>(.*)</etime>'
+stime_regex_str = r'<stime>((?:.|\s)+?)</stime>'
+etime_regex_str = '<etime>((?:.|\s)+?)</etime>'
 sent_regex_str = r'<sentence>((?:.|\s)+?)<\/sentence>'
 para_regex_str = r'<paragraph>((?:.|\s)+?)<\/paragraph>'
 speaker_regex_str = r'<speaker>((?:.|\s)+?)<\/speaker>'
-
-# sent_regex_str = r'<sentence>[\t]*((?:.|\s)+?)[\t]*<\/sentence>'
