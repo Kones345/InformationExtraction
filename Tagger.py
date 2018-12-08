@@ -34,40 +34,47 @@ class Tagger:
     train_sents = brown.tagged_sents()[:48000]
 
     def backoff_tagger(self, backoff=None):
-
+        """
+        Used to tag text using a more accurate backoff tagger
+        :param backoff: the current backoff
+        :return: a backoff tagger
+        """
         for cls in [UnigramTagger, BigramTagger, TrigramTagger]:
             backoff = cls(self.train_sents, backoff=backoff)
         return backoff
 
-    def tagPOS(self, body):
-
-        sents = nltk.tokenize.sent_tokenize(body)
-        for i in range(0, len(sents)):
-            sents[i] = nltk.tokenize.word_tokenize(sents[i])
-
-        tagged = self.backoff.tag_sents(sents)
-        flatten = lambda l: [item for sublist in l for item in sublist]
-        tagged = flatten(tagged)
-        processed_body = ['{}{{*{}*}}'.format(word, tag) for (word, tag) in tagged]
-
-        return ' '.join(processed_body)
-
-    def nerStanford(self, text, entitiy):
+    def ner_stanford(self, text, entity):
+        """
+        Gets a list of specific entities from text
+        :param text: the text we want to search in
+        :param entity: the entity to extract
+        :return: the list of entities
+        """
         tokenized_text = word_tokenize(text)
         classified_text = self.st.tag(tokenized_text)
         results = []
         for tag, chunk in groupby(classified_text, lambda x: x[1]):
-            if tag == entitiy:
+            if tag == entity:
                 results.append(" ".join(w for w, t in chunk))
-                # print( " ".join(w for w, t in chunk))
         return set(results)
 
     @staticmethod
     def split_on_tags(text, tag):
+        """
+        Splits text on a given tag
+        :param text: tagged text
+        :param tag: tag to split on
+        :return: split text
+        """
         return re.split(r'</?{}>'.format(tag), text)
 
     @staticmethod
     def tag_paragraphs(text):
+        """
+        Tags paragraphs in text
+        :param text: text to be tagged
+        :return:
+        """
         text = '\n\n{}\n\n'.format(text.strip('\n'))
         para = re.compile(paragraphRegex)
         for match in para.finditer(text):
@@ -78,6 +85,11 @@ class Tagger:
         return text.strip()
 
     def tag_sentences(self, text):
+        """
+        Tags sentences in the text
+        :param text: text to be tagged
+        :return: tagged text
+        """
         text_parts = self.split_on_tags(text, 'paragraph')
         sentences = []
         for part in text_parts:
@@ -91,8 +103,14 @@ class Tagger:
         return text
 
     @staticmethod
-    def tagTimes(stime, etime, text):
-
+    def tag_times(stime, etime, text):
+        """
+        Tags times in the text
+        :param stime: the start time
+        :param etime: the end time
+        :param text: the text to tag
+        :return: the text tagged with times
+        """
         if not etime and not stime:
             return text
         textHolder = text
@@ -110,6 +128,12 @@ class Tagger:
 
     @staticmethod
     def tag_locations(locations, text):
+        """
+        Tags locations in the text
+        :param locations: locations to be tagged
+        :param text: text to be tagged
+        :return: the text with locations tagged
+        """
         for loc in locations:
             insensitive_loc = re.compile(r'({})'.format(re.escape(loc)), re.IGNORECASE)
             text = re.sub(insensitive_loc, '<location>' + loc + '</location>', text)
@@ -118,7 +142,12 @@ class Tagger:
 
     @staticmethod
     def tag_speakers(text, speakers):
-
+        """
+        Tags speakers in the text
+        :param text: text to tag
+        :param speakers: speakers to tag
+        :return: the tagged text
+        """
         for spk in speakers:
 
             insensitive_spk = re.compile(r'(\b({})\b|[.?!]({})\b|\(({})\))'.format(re.escape(spk), re.escape(spk),
@@ -133,7 +162,13 @@ class Tagger:
 
         return text
 
-    def tagSeminar(self, path, directory, extractor):
+    def tag_seminar(self, path, directory, extractor):
+        """
+        Tags seminar with all previously found data and writes the data to a file.
+        :param path: the path to the untagged files
+        :param directory: the directory they are in
+        :param extractor: the extractor class to extract data
+        """
         for file in tqdm(os.listdir(directory)):
             filename = os.fsdecode(file)
             if filename.endswith(".txt"):
@@ -148,15 +183,15 @@ class Tagger:
 
                     header = header.rstrip('\n')
 
-                    stime, etime = extractor.extractTime(header)
-                    locations = extractor.extractLocation(header, body, self)
-                    speakers = extractor.extractSpeaker(header, body, self)
+                    stime, etime = extractor.extract_time(header)
+                    locations = extractor.extract_location(header, body, self)
+                    speakers = extractor.extract_speaker(header, body, self)
 
                     body = self.tag_paragraphs(body)
                     body = self.tag_sentences(body)
 
                     seminar = header + '\n\n' + body
-                    seminar = self.tagTimes(stime, etime, seminar)
+                    seminar = self.tag_times(stime, etime, seminar)
                     seminar = self.tag_speakers(seminar, speakers)
                     seminar = self.tag_locations(locations, seminar)
 
@@ -165,5 +200,4 @@ class Tagger:
                     out = open(out_location + filename, "w+")
                     out.write(seminar)
                     out.close()
-                    # print(filename)
                 continue

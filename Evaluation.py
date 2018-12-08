@@ -1,5 +1,5 @@
-
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import re
 from regex_store import *
@@ -8,7 +8,6 @@ from tabulate import tabulate
 
 
 class Evaluation:
-
     loc_tp = 0
     loc_classified = 0
     loc_true_count = 0
@@ -33,8 +32,13 @@ class Evaluation:
     sentence_classified = 0
     sentence_true_count = 0
 
-
-    def extractTestData(self, filename):
+    @staticmethod
+    def extract_test_data(filename):
+        """
+        Extracts tagged data from test files
+        :param filename: name of file to extract from
+        :return: the tagged data
+        """
         test_file_path = '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/seminar_testdata/test_tagged/'
         file = open(test_file_path + filename, 'r')
         contents = file.read()
@@ -60,7 +64,13 @@ class Evaluation:
         # print(paras)
         return speakers, locations, stimes, etimes, sents, paras
 
-    def extractOutData(self, filename):
+    @staticmethod
+    def extract_out_data(filename):
+        """
+        Extracts the output data from the files I tagged
+        :param filename: the file to have data extracted from
+        :return: the data extracted
+        """
         test_file_path = '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/out/'
         file = open(test_file_path + filename, 'r')
         contents = file.read()
@@ -88,19 +98,28 @@ class Evaluation:
         return speakers, locations, stimes, etimes, sents, paras
 
     def process_loc_tps(self, actual, output):
-
+        """
+        Processes the true positives for location
+        :param actual: actual locations from test data
+        :param output: data from output files
+        """
         self.loc_classified += len(output)
         self.loc_true_count += len(actual)
 
         for i in range(0, len(output)):
             try:
                 if output[i] == actual[i]:
-                    self.loc_tp +=1
+                    self.loc_tp += 1
 
             except:
                 continue
 
     def process_speaker_tps(self, actual, output):
+        """
+        Processes the true positives for speakers
+        :param actual: actual speakers from test data
+        :param output: data from output files
+        """
         self.speaker_classified += len(output)
         self.speaker_true_count += len(actual)
 
@@ -113,6 +132,11 @@ class Evaluation:
                 continue
 
     def process_stime_tps(self, actual, output):
+        """
+        Processes the true positives for stimes
+        :param actual: actual stimes from test data
+        :param output: data from output files
+        """
         self.stime_classified += len(output)
         self.stime_true_count += len(actual)
 
@@ -125,6 +149,11 @@ class Evaluation:
                 continue
 
     def process_etime_tps(self, actual, output):
+        """
+        Processes the true positives for etimes
+        :param actual: actual etimes from test data
+        :param output: data from output files
+        """
         self.etime_classified += len(output)
         self.etime_true_count += len(actual)
 
@@ -137,55 +166,83 @@ class Evaluation:
                 continue
 
     def process_sents_tps(self, actual, output):
+        """
+        Processes the true positives for sents
+        :param actual: actual sentences from test data
+        :param output: data from output files
+        """
         self.sentence_classified += len(output)
         self.sentence_true_count += len(actual)
 
         for i in range(0, len(output)):
             try:
-                # if output[i] == actual[i]:
-                #     self.sentence_tp += 1
                 for j in range(0, len(actual)):
                     if output[i] == actual[j]:
-                        self.sentence_tp +=1
+                        self.sentence_tp += 1
 
             except:
                 continue
 
     def process_para_tps(self, actual, output):
+        """
+        Processes the true positives for paragraphs
+        :param actual: actual paragraphs from test data
+        :param output: data from output files
+        """
         self.paragraph_classified += len(output)
         self.paragraph_true_count += len(actual)
 
         for i in range(0, len(output)):
             try:
-                # if output[i] == actual[i]:
-                #     self.paragraph += 1
                 for j in range(0, len(actual)):
                     if output[i] == actual[j]:
-                        self.paragraph_tp +=1
+                        self.paragraph_tp += 1
             except:
                 continue
 
     @staticmethod
     def calc_precision(tps, classified):
-        return tps/classified
+        """
+        Calculates precision given true positives and total amount classified
+        :param tps: the number of true positives
+        :param classified: the number of a variable classified
+        :return: the precision
+        """
+        return tps / classified
 
     @staticmethod
     def calc_recall(tps, actual_tp_count):
-        return tps/actual_tp_count
+        """
+        Calculates the recall.
+        :param tps: the number of true positives found
+        :param actual_tp_count: the number of true positives
+        :return: the recall value
+        """
+        return tps / actual_tp_count
 
     @staticmethod
     def calc_f_measure(precision, recall):
-        return ((precision * recall)/(precision + recall))*2
+        """
+        The F1 measure
+        :param precision: the precision of a variable
+        :param recall: the recall of the variable
+        :return: the f measure value
+        """
+        return ((precision * recall) / (precision + recall)) * 2
 
     def run(self):
-        directory = os.fsencode('/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/seminar_testdata/test_tagged/')
+        """
+        Processes precision, recall and f measure for each of the tags and prints the results in a table
+        """
+        directory = os.fsencode(
+            '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/seminar_testdata/test_tagged/')
         for file in os.listdir(directory):
             try:
                 filename = os.fsdecode(file)
                 if filename.endswith(".txt"):
-                    actual_speakers, actual_locations, actual_stimes, actual_etimes, actual_sents, actual_paras = self.extractTestData(
-                        filename)
-                    out_speakers, out_locations, out_stimes, out_etimes, out_sents, out_paras = self.extractOutData(
+                    actual_speakers, actual_locations, actual_stimes, actual_etimes, actual_sents, \
+                                                                        actual_paras = self.extract_test_data(filename)
+                    out_speakers, out_locations, out_stimes, out_etimes, out_sents, out_paras = self.extract_out_data(
                         filename)
                     self.process_etime_tps(actual_etimes, out_etimes)
                     self.process_loc_tps(actual_locations, out_locations)
@@ -212,7 +269,7 @@ class Evaluation:
         etime_row = ['etime', etime_precision, etime_recall, etime_f]
 
         location_precision = self.calc_precision(self.loc_tp, self.loc_classified)
-        location_recall =  self.calc_recall(self.loc_tp, self.loc_true_count)
+        location_recall = self.calc_recall(self.loc_tp, self.loc_true_count)
         location_f = self.calc_f_measure(location_precision, location_recall)
         loc_row = ['location', location_precision, location_recall, location_f]
 
@@ -230,11 +287,12 @@ class Evaluation:
         para_recall = self.calc_recall(self.paragraph_tp, self.paragraph_true_count)
         para_f = self.calc_f_measure(para_precision, para_recall)
         para_row = ['paragraph', para_precision, para_recall, para_f]
+        print(tabulate([stime_row, etime_row, loc_row, speaker_row, sent_row, para_row],
+                       headers=['Tag', 'Precision', 'Recall', 'F Measure']))
 
-        print(tabulate([stime_row, etime_row, loc_row, speaker_row, sent_row, para_row], headers=['Tag', 'Precision', 'Recall', 'F Measure']))
 
 if __name__ == '__main__':
-    eval = Evaluation()
+    e = Evaluation()
     # eval.extractOutData('301.txt')
     # eval.extractTestData('301.txt')
-    eval.run()
+    e.run()

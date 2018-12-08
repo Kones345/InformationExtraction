@@ -1,10 +1,10 @@
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import nltk
 import re
 from word2number import w2n
 from regex_store import *
-from nltk.tree import Tree
 import nltk.data
 from pathlib import Path
 
@@ -24,6 +24,10 @@ class DataExtractor:
         self.sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
 
     def train(self, directory):
+        """
+        Looks for speakers and locations in the training data and adds them to speakers we already know about
+        :param directory: the directory in which the training files can be found
+        """
         knownSpeakersRegx = re.compile(knownSpeakersRegxStr)
 
         re.compile(deadTag)
@@ -48,10 +52,13 @@ class DataExtractor:
                         self.knownLocations.add(loc)
         print('Training: ✅')
 
-    # TODO: Handle cases where the formst of time is 'from/until x'
     @staticmethod
-    def extractTime(text):
-
+    def extract_time(text):
+        """
+        Extracts the time from some text using a series of regex patterns
+        :param text: the text which is being searched through
+        :return: the start time and potentially end time
+        """
         time1 = re.compile(timePattern1)
         time2 = re.compile(timePattern2)
         time3 = re.compile(timePattern3)
@@ -82,14 +89,27 @@ class DataExtractor:
             return str(result3.group(0)), None
         return None, None
 
-    def cleanLoc(self, x):
+    @staticmethod
+    def clean_loc(x):
+        """
+        Checks whether a location is legitimate
+        :param x: the potential location
+        :return: the boolean of whether the string is clean or not
+        """
         try:
             result = w2n.word_to_num(x)
         except:
             result = None
         return result is None and x != "" and (x.isdigit()) == False and x != "room" and x != "Room"
 
-    def extractLocation(self, header, body, tagger):
+    def extract_location(self, header, body, tagger):
+        """
+        Extracts a list of possible locations from the text
+        :param header: the email header
+        :param body: the email body
+        :param tagger: the tagger class
+        :return: the list of locations
+        """
         location_regx = re.compile(location_regx_str, re.IGNORECASE)
         locations = set()
         locationList = []
@@ -98,7 +118,7 @@ class DataExtractor:
 
         if len(locations) == 0:
             joined = ' '.join(body.split())
-            locationList = tagger.nerStanford(joined, "LOCATION")
+            locationList = tagger.ner_stanford(joined, "LOCATION")
             for x in locationList:
                 if x in self.knownLocations:
                     locations.add(x)
@@ -114,24 +134,12 @@ class DataExtractor:
         else:
             return locations
 
-    @staticmethod
-    def get_continuous_chunks(chunked):
-        prev = None
-        continuous_chunk = []
-        current_chunk = []
-        for i in chunked:
-            if type(i) == Tree:
-                current_chunk.append(" ".join([token for token, pos in i.leaves()]))
-            elif current_chunk:
-                named_entity = " ".join(current_chunk)
-                if named_entity not in continuous_chunk:
-                    continuous_chunk.append(named_entity)
-                    current_chunk = []
-            else:
-                continue
-        return continuous_chunk
-
-    def cleanSpeakerList(self, speakers):
+    def clean_speaker_list(self, speakers):
+        """
+        Removes miscellaneous characters from list of speakers
+        :param speakers: the list of speakers
+        :return: the list of clean speakers
+        """
         final = set()
         temp = set()
         for x in speakers:
@@ -147,14 +155,21 @@ class DataExtractor:
 
         return final
 
-    def extractSpeaker(self, header, body, tagger):
+    def extract_speaker(self, header, body, tagger):
+        """
+        Extracts potential speakers from the text
+        :param header: the header of the emai;
+        :param body: the body of the email
+        :param tagger: the tagger used
+        :return: the list of potential speakers
+        """
         speakerList = []
         speaker_regex = re.compile(speaker_regx_str, re.IGNORECASE)
         flatten = lambda l: [item for sublist in l for item in sublist]
         speakerList.append(speaker_regex.findall(header))
         speakerList = flatten(speakerList)
         if len(speakerList) > 0:
-            return self.cleanSpeakerList(speakerList)
+            return self.clean_speaker_list(speakerList)
         speakerList.append(speaker_regex.findall(body))
         speakerList = flatten(speakerList)
 
@@ -167,8 +182,8 @@ class DataExtractor:
 
         if len(speakerList) == 0:
             joined = ' '.join(body.split())
-            speakerList = tagger.nerStanford(joined, "PERSON")
+            speakerList = tagger.ner_stanford(joined, "PERSON")
 
-        self.knownSpeakers = self.knownSpeakers.union(self.cleanSpeakerList(speakerList))
+        self.knownSpeakers = self.knownSpeakers.union(self.clean_speaker_list(speakerList))
 
-        return self.cleanSpeakerList(speakerList)
+        return self.clean_speaker_list(speakerList)

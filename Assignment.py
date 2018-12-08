@@ -8,7 +8,7 @@ import os
 from Evaluation import Evaluation
 
 
-
+# Clock to time what the running of the program
 start_time = time.time()
 
 # Setting up directory
@@ -16,10 +16,12 @@ mypath = os.getcwd() + '/data/seminar_testdata/test_untagged/'
 trainingPath = 'data/training'
 directory = os.fsencode(mypath)
 
+# Runs the ontology classification
 print('Running Ontology Classification: \n')
 ontology = Ontology()
 ontology.run(mypath)
 
+# Begins tagging
 print("\nTagging progress beginning. Get a brew, it'll take a while... \n")
 extractor = DataExtractor()
 
@@ -28,7 +30,7 @@ extractor.train(trainingPath)
 tagger = Tagger()
 
 # Tags all emails in the directory given
-tagger.tagSeminar(mypath, directory, extractor)
+tagger.tag_seminar(mypath, directory, extractor)
 
 # Calculates how long the program took
 seconds = time.time() - start_time

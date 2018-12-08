@@ -19,6 +19,9 @@ class Ontology:
     data_embeddings = {}
 
     def __init__(self):
+        """
+        Opens glove file and stores all the word embeddings in an array
+        """
         with open('glove.6B.200d.txt') as f:
             for line in f:
                 values = line.split()
@@ -28,6 +31,7 @@ class Ontology:
         # print('Loaded %s word vectors.' % len(self.embeddings_index))
         self.setup()
 
+    # Fills the categories and data embedidngs dictionaries
     def setup(self):
         # Words -> category, makes a dictionary of keyword; category pairs
         self.categories = {word: key for key, words in self.data.items() for word in words}
@@ -36,6 +40,7 @@ class Ontology:
         self.data_embeddings = {key: value for key, value in self.embeddings_index.items() if
                                 key in self.categories.keys()}
 
+    #Stores all the keywords for different topica in the ontology
     data = {
         'Computer Science': ['software', 'object-oriented', 'architecture', 'design', 'product', 'debug', 'breakpoint',
                              'planning', 'a*', 'd*', 'development', 'quality', 'tests', 'artificial', 'intelligence',
@@ -123,6 +128,7 @@ class Ontology:
 
     }
 
+    # Stop words to remove from the topic to improve results
     extra_stop_words = {'lecture', 'seminar', 'talk', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday',
                         'saturday', 'sunday', 'telecastseminar', 'today', 'weh', 'adamson', 'wing', 'hall', 'baker',
                         'rescheduled', 'am', 'pm', 'reminder', 'jan', 'feb', 'march', 'apr', 'april', 'may', 'jun',
@@ -132,8 +138,12 @@ class Ontology:
                         'october'
                         'december'}
 
-    # Processing the query
     def process(self, query):
+        """
+        Gives a word a score of how similar it is to each category
+        :param query: the word to query
+        :return: dictionary of scores for each category
+        """
         scores = {}
 
         try:
@@ -152,6 +162,11 @@ class Ontology:
         return scores
 
     def search_body_for_topic(self, body):
+        """
+        Counts the number of occurrences of keywords for each category in the body of an email
+        :param body: the body text of an email
+        :return: the scores from the body
+        """
         res = {'Computer Science': 0, 'Politics': 0, 'Biology': 0, 'Chemistry': 0, 'Physics and Astronomy': 0,
                'Languages': 0, 'Education': 0, 'Business': 0, 'Performing Arts': 0, 'Mathematics': 0, 'Other': 0,
                'Engineering': 0, 'Art': 0, 'Medicine': 0, 'Philsophy and Religion': 0}
@@ -165,7 +180,10 @@ class Ontology:
         return res
 
     def run(self, directory):
-
+        """
+        Classifies every given file
+        :param directory: the directory where the files we want to classify can be found
+        """
         stop_words = set(stopwords.words('english'))
 
         stop_words = stop_words.union(self.extra_stop_words)
@@ -183,7 +201,6 @@ class Ontology:
             with open(p, 'r', encoding='utf-8') as f:
                 fileMatch = re.search('[0-9]*.txt', p)
                 filename = fileMatch.group()
-                # print(p + '\n')
                 content = f.read()
                 topic = re.search(topicRegex, content)
                 if topic is None:
@@ -194,6 +211,7 @@ class Ontology:
                 word_tokens = word_tokenize(normalized)
                 filtered_sentence = [w for w in word_tokens if w not in stop_words]
 
+                # Gives every category a reduced score to account for some miscellaneous words classifying under topics
                 results = {'Computer Science': -2, 'Politics': -2, 'Biology': -2, 'Chemistry': -2,
                            'Physics and Astronomy': -2,
                            'Languages': -2, 'Education': -2, 'Business': -2, 'Performing Arts': -2, 'Mathematics': -2,
@@ -203,7 +221,6 @@ class Ontology:
                 filtered_sentence = [key for key, value in tagged if value == 'NN' or value == 'NNS']
 
                 for word in filtered_sentence:
-                    # print('Result for %s: ' % word)
 
                     # Checks if the word is a keyword, if so then it's score gets a boost
                     for k, v in self.data.items():
