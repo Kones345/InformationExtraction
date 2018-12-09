@@ -24,9 +24,8 @@ class Tagger:
     def __init__(self):
         self.backoff = self.backoff_tagger(backoff=DefaultTagger('NN'))
         self.st = StanfordNERTagger(
-            '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/classifiers/english.all'
-            '.3class.distsim.crf.ser.gz',
-            '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/stanfordNERJars/stanford-ner.jar',
+            'stanfordNERJars/classifiers/english.all.3class.distsim.crf.ser.gz',
+            'stanfordNERJars/stanford-ner.jar',
             encoding='utf-8')
         if os.path.exists("out/"):
             shutil.rmtree('out/')

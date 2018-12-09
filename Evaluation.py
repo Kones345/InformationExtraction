@@ -40,8 +40,9 @@ class Evaluation:
         :param filename: name of file to extract from
         :return: the tagged data
         """
-        test_file_path = '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/seminar_testdata/test_tagged/'
+        test_file_path = 'data/seminar_testdata/test_tagged/'
         file = open(test_file_path + filename, 'r')
+        # print(test_file_path + filename)
         contents = file.read()
         speaker_regex = re.compile(speaker_regex_str)
         speakers = speaker_regex.findall(contents)
@@ -79,7 +80,7 @@ class Evaluation:
         :param filename: the file to have data extracted from
         :return: the data extracted
         """
-        test_file_path = '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/out/'
+        test_file_path = 'out/'
         file = open(test_file_path + filename, 'r')
         contents = file.read()
         speaker_regex = re.compile(speaker_regex_str)
@@ -250,7 +251,7 @@ class Evaluation:
         Processes precision, recall and f measure for each of the tags and prints the results in a table
         """
         directory = os.fsencode(
-            '/Users/Adam/Documents/BRUM/SecondYear/Modules/NLP/Assignment/data/seminar_testdata/test_tagged/')
+            'data/seminar_testdata/test_tagged')
         for file in os.listdir(directory):
             try:
                 filename = os.fsdecode(file)
@@ -308,6 +309,4 @@ class Evaluation:
 
 if __name__ == '__main__':
     e = Evaluation()
-    # eval.extractOutData('301.txt')
-    # eval.extractTestData('301.txt')
     e.run()
