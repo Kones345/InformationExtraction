@@ -5,6 +5,7 @@ import re
 from regex_store import *
 import os
 from tabulate import tabulate
+import string
 
 
 class Evaluation:
@@ -55,12 +56,13 @@ class Evaluation:
         etimes = [e.replace('.', '') for e in etimes]
         etimes = [e.replace(' ', '') for e in etimes]
         sents = re.findall(sent_regex_str, contents)
-        sents = [s.replace('.', '') for s in sents]
         sents = [s.replace(' ', '') for s in sents]
         sents = [re.sub('<\/?[a-z]+?>', '', s) for s in sents]
+        sents = [s.strip(string.punctuation) for s in sents]
         paras = re.findall(para_regex_str, contents)
         paras = [re.sub('<\/?[a-z]+?>', '', p) for p in paras]
         paras = [p.replace(' ', '') for p in paras]
+        paras = [p.strip(string.punctuation) for p in paras]
 
         # print(speakers)
         # print(locations)
@@ -93,13 +95,14 @@ class Evaluation:
         etimes = [e.replace('.', '') for e in etimes]
         etimes = [e.replace(' ', '') for e in etimes]
         sents = re.findall(sent_regex_str, contents)
-        sents = [s.replace('.', '') for s in sents]
         sents = [s.replace(' ', '') for s in sents]
         sents = [re.sub('<\/?[a-z]+?>', '', s) for s in sents]
-
+        sents = [s.strip(string.punctuation) for s in sents]
         paras = re.findall(para_regex_str, contents)
         paras = [p.replace(' ', '') for p in paras]
         paras = [re.sub('<\/?[a-z]+?>', '', p) for p in paras]
+
+        paras = [p.strip(string.punctuation) for p in paras]
 
         # print(speakers)
         # print(locations)
