@@ -47,7 +47,13 @@ class Evaluation:
         location_regex = re.compile(knownLocationRegxStr)
         locations = re.findall(location_regex, contents)
         stimes = re.findall(stime_regex_str, contents)
+        stimes = [s.replace(':', '') for s in stimes]
+        stimes = [s.replace('.', '') for s in stimes]
+        stimes = [s.replace(' ', '') for s in stimes]
         etimes = re.findall(etime_regex_str, contents)
+        etimes = [e.replace(':', '') for e in etimes]
+        etimes = [e.replace('.', '') for e in etimes]
+        etimes = [e.replace(' ', '') for e in etimes]
         sents = re.findall(sent_regex_str, contents)
         sents = [s.replace('.', '') for s in sents]
         sents = [s.replace(' ', '') for s in sents]
@@ -79,7 +85,13 @@ class Evaluation:
         location_regex = re.compile(knownLocationRegxStr)
         locations = re.findall(location_regex, contents)
         stimes = re.findall(stime_regex_str, contents)
+        stimes = [s.replace(':', '') for s in stimes]
+        stimes = [s.replace('.', '') for s in stimes]
+        stimes = [s.replace(' ', '') for s in stimes]
         etimes = re.findall(etime_regex_str, contents)
+        etimes = [e.replace(':', '') for e in etimes]
+        etimes = [e.replace('.', '') for e in etimes]
+        etimes = [e.replace(' ', '') for e in etimes]
         sents = re.findall(sent_regex_str, contents)
         sents = [s.replace('.', '') for s in sents]
         sents = [s.replace(' ', '') for s in sents]

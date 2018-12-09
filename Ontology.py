@@ -45,7 +45,7 @@ class Ontology:
         'Computer Science': ['software', 'object-oriented', 'architecture', 'design', 'product', 'debug', 'breakpoint',
                              'planning', 'a*', 'd*', 'development', 'quality', 'tests', 'artificial', 'intelligence',
                              'recursion',
-                             'iterative',
+                             'iterative', 'robots', 'logic'
                              'machine learning', 'ai', 'robotics', 'vision', 'data', 'complexity', 'search',
                              'nlp', 'natural language processing', 'ieee', 'navigation', 'robot', 'planning',
                              'humanoid', 'autonomous', 'knowledge', 'language', 'decision', 'recognition',
@@ -58,10 +58,10 @@ class Ontology:
                              'ruby', 'robotics', 'circuit', 'computing', 'systems', 'framework', 'computer'],
         'Biology': ['bio', 'disease', 'immune', 'immunonoculation', 'biological', 'genome', 'biochemistry', 'molecules',
                     'medicine', 'clinic', 'cancer', 'health', 'cellular', 'cells', 'respiration', 'brain',
-                    'neurological',
+                    'neurological','enzyme', 'protein', 'glucose', 'fructose', 'biomolecule', 'biology',
                     'imaging', 'illness', 'sick', 'disease', 'healthcare'],
         'Chemistry': ['chemistry', 'drugs', 'polymers', 'graft', 'extruders', 'nanotechnology', 'fluids',
-                      'thermodynamic',
+                      'thermodynamic','molecule', 'molecular',
                       'microemulsions', 'flourescence', 'water', 'dissolved', 'exothermic', 'endothermic', 'alcohol'],
         'Physics and Astronomy': ['physics', 'thermodynamics', 'nanotechnology', 'magnetism', 'frequency', 'nuclear',
                                   'stars',
@@ -99,7 +99,7 @@ class Ontology:
                       'masters', 'phd', 'research'],
         'Engineering': ['material', 'engineering', 'environment', 'design', '3d', 'aeroacoustics', 'aerothermodynamics',
                         'air', 'turbulence', 'bridge', 'collapse', 'building', 'cad', 'car', 'fiber', 'optics',
-                        'geoengineering', 'nano', 'nanotubes', 'stereo', 'tunnel'],
+                        'geoengineering', 'nano', 'nanotubes', 'stereo', 'tunnel', 'environmental', 'steel', 'metal'],
         'Mathematics': ['angle', 'measure', 'prove', 'solve', 'problem', 'equation', 'graph', 'plane', 'line', 'axis',
                         'algebra',
                         'adjacent', 'coefficient', 'frequency', 'circumference', 'denominator', 'distribution',
@@ -108,7 +108,7 @@ class Ontology:
                         'integer', 'quartile', 'rational', 'irrational', 'lcm', 'average', 'mean', 'median', 'mode',
                         'numerator', 'even', 'odd', 'parallel', 'perpendicular', 'probability', 'product', 'prime',
                         'quadratic', 'remainder', 'rotation', 'rotate', 'sum', 'symmetry', 'tangent', 'volume',
-                        'solve', 'square', 'root', 'cube'],
+                        'solve', 'square', 'root', 'cube', 'mathematics', 'mathematical'],
         'Art': ['art', 'fine', 'color', 'colour', 'paint', 'gallery', 'print', 'pop', 'abstract', 'artist',
                 'wall', 'acrylic', 'sculpture', 'watercolor', 'oil', 'supplies', 'modern', 'artwork', 'famous',
                 'deco', 'pixel', '3d', 'liberal', 'vector', 'clip', 'creative', 'paper', 'nude', 'concept', 'animation'
@@ -209,7 +209,6 @@ class Ontology:
                 topic = re.sub(cleanTextRegex, '', topic)
                 normalized = " ".join(lemma.lemmatize(word) for word in topic.split())
                 word_tokens = word_tokenize(normalized)
-                filtered_sentence = [w for w in word_tokens if w not in stop_words]
 
                 # Gives every category a reduced score to account for some miscellaneous words classifying under topics
                 results = {'Computer Science': -2, 'Politics': -2, 'Biology': -2, 'Chemistry': -2,
@@ -217,17 +216,26 @@ class Ontology:
                            'Languages': -2, 'Education': -2, 'Business': -2, 'Performing Arts': -2, 'Mathematics': -2,
                            'Other': 0, 'Engineering': -2, 'Art': -2, 'Medicine': -2, 'Philosophy and Religion': -2}
 
+                for word in word_tokens:
+                    for k, v in self.data.items():
+                        if word in v:
+                            current_val = results[k]
+                            current_val += 10
+                            results[k] = current_val
+
+                filtered_sentence = [w for w in word_tokens if w not in stop_words]
+
                 tagged = nltk.pos_tag(filtered_sentence)
                 filtered_sentence = [key for key, value in tagged if value == 'NN' or value == 'NNS']
 
                 for word in filtered_sentence:
 
                     # Checks if the word is a keyword, if so then it's score gets a boost
-                    for k, v in self.data.items():
-                        if word in v:
-                            current_val = results[k]
-                            current_val += 10
-                            results[k] = current_val
+                    # for k, v in self.data.items():
+                    #     if word in v:
+                    #         current_val = results[k]
+                    #         current_val += 10
+                    #         results[k] = current_val
 
                     # Use word embeddings to calculate relative score to other categories
                     resultStream = self.process(word)
